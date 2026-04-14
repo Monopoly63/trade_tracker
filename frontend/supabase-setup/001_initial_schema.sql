@@ -2,8 +2,7 @@
 -- Trading Journal & Risk Analysis System
 -- Initial Schema Migration
 -- ============================================================
--- IMPORTANT: Replace {SESSION_ID} with your chosen session ID
--- before running this migration.
+-- Run this SQL in your Supabase SQL Editor (Dashboard > SQL Editor > New Query)
 -- ============================================================
 
 -- Enable UUID extension
@@ -12,7 +11,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ============================================================
 -- STRATEGIES TABLE
 -- ============================================================
-CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_strategies (
+CREATE TABLE IF NOT EXISTS app_strategies (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
@@ -26,7 +25,7 @@ CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_strategies (
 -- ============================================================
 -- RISK RULES TABLE
 -- ============================================================
-CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_risk_rules (
+CREATE TABLE IF NOT EXISTS app_risk_rules (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   max_risk_per_trade DECIMAL(5,2) NOT NULL DEFAULT 1.0,
@@ -42,10 +41,10 @@ CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_risk_rules (
 -- ============================================================
 -- TRADES TABLE
 -- ============================================================
-CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_trades (
+CREATE TABLE IF NOT EXISTS app_trades (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  strategy_id UUID REFERENCES app_{SESSION_ID}_strategies(id) ON DELETE SET NULL,
+  strategy_id UUID REFERENCES app_strategies(id) ON DELETE SET NULL,
 
   -- Basic Info
   instrument TEXT NOT NULL,
@@ -93,9 +92,9 @@ CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_trades (
 -- ============================================================
 -- TRADE ERRORS TABLE
 -- ============================================================
-CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_trade_errors (
+CREATE TABLE IF NOT EXISTS app_trade_errors (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  trade_id UUID NOT NULL REFERENCES app_{SESSION_ID}_trades(id) ON DELETE CASCADE,
+  trade_id UUID NOT NULL REFERENCES app_trades(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   error_type TEXT NOT NULL CHECK (error_type IN (
     'FOMO_ENTRY', 'EARLY_EXIT', 'LATE_EXIT', 'OVERSIZE_POSITION',
@@ -109,9 +108,9 @@ CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_trade_errors (
 -- ============================================================
 -- TRADE TAGS TABLE
 -- ============================================================
-CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_trade_tags (
+CREATE TABLE IF NOT EXISTS app_trade_tags (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  trade_id UUID NOT NULL REFERENCES app_{SESSION_ID}_trades(id) ON DELETE CASCADE,
+  trade_id UUID NOT NULL REFERENCES app_trades(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   tag TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -120,9 +119,9 @@ CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_trade_tags (
 -- ============================================================
 -- ATTACHMENTS TABLE (Chart Screenshots)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_attachments (
+CREATE TABLE IF NOT EXISTS app_attachments (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  trade_id UUID NOT NULL REFERENCES app_{SESSION_ID}_trades(id) ON DELETE CASCADE,
+  trade_id UUID NOT NULL REFERENCES app_trades(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   file_name TEXT NOT NULL,
   file_path TEXT NOT NULL,
@@ -135,7 +134,7 @@ CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_attachments (
 -- ============================================================
 -- TRADE REVIEWS TABLE (Daily/Weekly/Monthly Reviews)
 -- ============================================================
-CREATE TABLE IF NOT EXISTS app_{SESSION_ID}_trade_reviews (
+CREATE TABLE IF NOT EXISTS app_trade_reviews (
   id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   review_type TEXT NOT NULL CHECK (review_type IN ('DAILY', 'WEEKLY', 'MONTHLY')),

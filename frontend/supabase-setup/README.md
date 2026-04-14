@@ -27,14 +27,9 @@ Execute the SQL files **in order** using the Supabase SQL Editor (**Dashboard > 
 
 1. **`001_initial_schema.sql`** — Creates all tables (strategies, risk_rules, trades, trade_errors, trade_tags, attachments, trade_reviews)
 2. **`002_rls_policies.sql`** — Enables Row Level Security and creates access policies
-3. **`003_indexes_views.sql`** — Creates performance indexes and the `trade_summary` analytics view
+3. **`003_indexes_views.sql`** — Creates performance indexes and the `app_trade_summary` analytics view
 
-> ⚠️ **Important:** Replace `{SESSION_ID}` in all SQL files with the same value you use for `VITE_SESSION_ID` in your `.env` file. This prefix isolates your tables.
-
-### Quick Replace Command
-Before running each SQL file, do a find-and-replace:
-- Find: `{SESSION_ID}`
-- Replace with: your chosen session ID (e.g., `myapp_001`)
+Simply copy and paste each file's content into the SQL Editor and click "Run". No modifications needed.
 
 ## Step 4: Set Up Storage
 
@@ -53,7 +48,7 @@ Follow the instructions in **`004_storage_setup.md`** to create the private stor
    ```bash
    cp .env.example .env
    ```
-2. Fill in all the values from Steps 2-4
+2. Fill in your Supabase URL and Anon Key from Step 2
 
 ## Step 7: Deploy to Vercel
 
@@ -63,23 +58,24 @@ Follow the instructions in **`004_storage_setup.md`** to create the private stor
 4. Add all environment variables from your `.env` file to Vercel's Environment Variables settings
 5. Deploy!
 
-## Table Naming Convention
+## Table Names
 
-All tables use the prefix `app_{SESSION_ID}_` to allow multiple environments on the same Supabase project:
+All tables use the `app_` prefix:
 
-| Table | Full Name |
-|-------|-----------|
-| strategies | `app_{SESSION_ID}_strategies` |
-| risk_rules | `app_{SESSION_ID}_risk_rules` |
-| trades | `app_{SESSION_ID}_trades` |
-| trade_errors | `app_{SESSION_ID}_trade_errors` |
-| trade_tags | `app_{SESSION_ID}_trade_tags` |
-| attachments | `app_{SESSION_ID}_attachments` |
-| trade_reviews | `app_{SESSION_ID}_trade_reviews` |
+| Table | Name |
+|-------|------|
+| strategies | `app_strategies` |
+| risk_rules | `app_risk_rules` |
+| trades | `app_trades` |
+| trade_errors | `app_trade_errors` |
+| trade_tags | `app_trade_tags` |
+| attachments | `app_attachments` |
+| trade_reviews | `app_trade_reviews` |
+| trade_summary (view) | `app_trade_summary` |
 
 ## Troubleshooting
 
-- **"relation does not exist"** — Make sure you ran all SQL files in order and replaced `{SESSION_ID}` correctly
+- **"relation does not exist"** — Make sure you ran all SQL files in order (001, 002, 003)
 - **"new row violates row-level security policy"** — Make sure you're authenticated and the RLS policies were created
 - **Storage upload fails** — Check that the bucket exists and storage policies are in place
 - **Auth not working** — Verify your `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are correct

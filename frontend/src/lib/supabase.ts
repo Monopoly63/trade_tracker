@@ -21,21 +21,18 @@ export const supabase = createClient(
 // ============================================================
 // Table Names
 // ============================================================
-// Tables use a session ID prefix for environment isolation.
-// Set VITE_SESSION_ID in your .env file.
-// Format: app_{SESSION_ID}_{entity_name}
+// Fixed table names with "app_" prefix.
+// No session ID needed — just run the SQL files and you're ready.
 // ============================================================
 
-const SESSION_ID = import.meta.env.VITE_SESSION_ID || 'your_session_id';
-
 export const TABLES = {
-  strategies: `app_${SESSION_ID}_strategies`,
-  risk_rules: `app_${SESSION_ID}_risk_rules`,
-  trades: `app_${SESSION_ID}_trades`,
-  trade_errors: `app_${SESSION_ID}_trade_errors`,
-  trade_tags: `app_${SESSION_ID}_trade_tags`,
-  attachments: `app_${SESSION_ID}_attachments`,
-  trade_reviews: `app_${SESSION_ID}_trade_reviews`,
+  strategies: 'app_strategies',
+  risk_rules: 'app_risk_rules',
+  trades: 'app_trades',
+  trade_errors: 'app_trade_errors',
+  trade_tags: 'app_trade_tags',
+  attachments: 'app_attachments',
+  trade_reviews: 'app_trade_reviews',
 } as const;
 
 // ============================================================
