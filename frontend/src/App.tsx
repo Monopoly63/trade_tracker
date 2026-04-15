@@ -1,5 +1,6 @@
 import { Toaster } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Trades from "./pages/Trades";
@@ -26,6 +27,7 @@ function App() {
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+      <VercelAnalytics />
     </BrowserRouter>
   );
 }
