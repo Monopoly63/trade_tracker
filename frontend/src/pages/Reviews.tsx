@@ -3,7 +3,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { authRepo, tradeReviewsRepo } from '@/lib/repository';
 import { formatR, formatPercent, formatCurrency } from '@/lib/services';
 import type { TradeReview } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -94,7 +94,7 @@ export default function Reviews() {
   const renderStars = (rating: number | null) => {
     if (!rating) return '—';
     return Array.from({ length: 5 }, (_, i) => (
-      <Star key={i} className={`w-3.5 h-3.5 inline ${i < rating ? 'text-[#F0A500] fill-[#F0A500]' : 'text-[#8B8BA7]'}`} />
+      <Star key={i} className={`w-3.5 h-3.5 inline ${i < rating ? 'text-[#F0A500] fill-[#F0A500]' : 'theme-text-secondary'}`} />
     ));
   };
 
@@ -103,8 +103,8 @@ export default function Reviews() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Trade Reviews</h1>
-            <p className="text-[#8B8BA7] text-sm mt-1">Daily, weekly, and monthly performance reviews</p>
+            <h1 className="text-2xl font-bold theme-text-primary">Trade Reviews</h1>
+            <p className="theme-text-secondary text-sm mt-1">Daily, weekly, and monthly performance reviews</p>
           </div>
           <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white">
             <Plus className="w-4 h-4 mr-1" /> New Review
@@ -112,27 +112,27 @@ export default function Reviews() {
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-[#8B8BA7]">Loading...</div>
+          <div className="text-center py-16 theme-text-secondary">Loading...</div>
         ) : reviews.length === 0 ? (
-          <Card className="bg-[#111118] border-[#1E1E2E]">
+          <Card className="theme-bg-secondary theme-border border">
             <CardContent className="flex flex-col items-center py-16">
-              <ClipboardList className="w-12 h-12 text-[#8B8BA7] mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">No reviews yet</h3>
-              <p className="text-[#8B8BA7] text-sm">Create periodic reviews to track your progress and lessons learned</p>
+              <ClipboardList className="w-12 h-12 theme-text-secondary mb-4" />
+              <h3 className="text-lg font-semibold theme-text-primary mb-2">No reviews yet</h3>
+              <p className="theme-text-secondary text-sm">Create periodic reviews to track your progress and lessons learned</p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-4">
             {reviews.map((review) => (
-              <Card key={review.id} className="bg-[#111118] border-[#1E1E2E]">
+              <Card key={review.id} className="theme-bg-secondary theme-border border">
                 <CardContent className="p-4">
                   <div className="flex items-start justify-between">
                     <div className="space-y-3 flex-1">
                       <div className="flex items-center gap-3">
-                        <Badge variant="outline" className={typeColors[review.review_type] || 'text-[#8B8BA7] border-[#8B8BA7]/30'}>
+                        <Badge variant="outline" className={typeColors[review.review_type] || 'theme-text-secondary border-current/30'}>
                           {review.review_type}
                         </Badge>
-                        <span className="text-sm text-[#8B8BA7] font-mono">
+                        <span className="text-sm theme-text-secondary font-mono">
                           {review.period_start} → {review.period_end}
                         </span>
                         <span className="text-sm">{renderStars(review.overall_rating)}</span>
@@ -140,38 +140,38 @@ export default function Reviews() {
 
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
                         {review.total_trades !== null && (
-                          <div className="bg-[#0A0A0F] rounded-lg p-2.5">
-                            <p className="text-[10px] text-[#8B8BA7] uppercase">Trades</p>
-                            <p className="font-mono font-bold text-white">{review.total_trades}</p>
+                          <div className="theme-bg-tertiary rounded-lg p-2.5">
+                            <p className="text-[10px] theme-text-secondary uppercase">Trades</p>
+                            <p className="font-mono font-bold theme-text-primary">{review.total_trades}</p>
                           </div>
                         )}
                         {review.win_rate !== null && (
-                          <div className="bg-[#0A0A0F] rounded-lg p-2.5">
-                            <p className="text-[10px] text-[#8B8BA7] uppercase">Win Rate</p>
+                          <div className="theme-bg-tertiary rounded-lg p-2.5">
+                            <p className="text-[10px] theme-text-secondary uppercase">Win Rate</p>
                             <p className={`font-mono font-bold ${review.win_rate >= 50 ? 'text-[#00C896]' : 'text-[#FF4D6D]'}`}>
                               {formatPercent(review.win_rate)}
                             </p>
                           </div>
                         )}
                         {review.pnl_usd !== null && (
-                          <div className="bg-[#0A0A0F] rounded-lg p-2.5">
-                            <p className="text-[10px] text-[#8B8BA7] uppercase">P&L (USD)</p>
+                          <div className="theme-bg-tertiary rounded-lg p-2.5">
+                            <p className="text-[10px] theme-text-secondary uppercase">P&L (USD)</p>
                             <p className={`font-mono font-bold ${review.pnl_usd >= 0 ? 'text-[#00C896]' : 'text-[#FF4D6D]'}`}>
                               {formatCurrency(review.pnl_usd)}
                             </p>
                           </div>
                         )}
                         {review.pnl_r !== null && (
-                          <div className="bg-[#0A0A0F] rounded-lg p-2.5">
-                            <p className="text-[10px] text-[#8B8BA7] uppercase">P&L (R)</p>
+                          <div className="theme-bg-tertiary rounded-lg p-2.5">
+                            <p className="text-[10px] theme-text-secondary uppercase">P&L (R)</p>
                             <p className={`font-mono font-bold ${review.pnl_r >= 0 ? 'text-[#00C896]' : 'text-[#FF4D6D]'}`}>
                               {formatR(review.pnl_r)}
                             </p>
                           </div>
                         )}
                         {review.risk_compliance_percent !== null && (
-                          <div className="bg-[#0A0A0F] rounded-lg p-2.5">
-                            <p className="text-[10px] text-[#8B8BA7] uppercase">Compliance</p>
+                          <div className="theme-bg-tertiary rounded-lg p-2.5">
+                            <p className="text-[10px] theme-text-secondary uppercase">Compliance</p>
                             <p className={`font-mono font-bold ${review.risk_compliance_percent >= 80 ? 'text-[#00C896]' : 'text-[#FF4D6D]'}`}>
                               {formatPercent(review.risk_compliance_percent)}
                             </p>
@@ -181,24 +181,24 @@ export default function Reviews() {
 
                       {review.lessons_learned && (
                         <div>
-                          <p className="text-xs text-[#8B8BA7] mb-1">Lessons Learned</p>
-                          <p className="text-sm text-white bg-[#0A0A0F] p-3 rounded-lg whitespace-pre-wrap">{review.lessons_learned}</p>
+                          <p className="text-xs theme-text-secondary mb-1">Lessons Learned</p>
+                          <p className="text-sm theme-text-primary theme-bg-tertiary p-3 rounded-lg whitespace-pre-wrap">{review.lessons_learned}</p>
                         </div>
                       )}
                       {review.improvement_goals && (
                         <div>
-                          <p className="text-xs text-[#8B8BA7] mb-1">Improvement Goals</p>
-                          <p className="text-sm text-white bg-[#0A0A0F] p-3 rounded-lg whitespace-pre-wrap">{review.improvement_goals}</p>
+                          <p className="text-xs theme-text-secondary mb-1">Improvement Goals</p>
+                          <p className="text-sm theme-text-primary theme-bg-tertiary p-3 rounded-lg whitespace-pre-wrap">{review.improvement_goals}</p>
                         </div>
                       )}
                     </div>
 
                     <div className="flex gap-1 ml-4 shrink-0">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-white"
+                      <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:theme-text-primary"
                         onClick={() => { setEditing(review); setShowForm(true); }}>
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-red-400"
+                      <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:text-red-400"
                         onClick={() => handleDelete(review.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -212,75 +212,75 @@ export default function Reviews() {
 
         {/* Review Form Dialog */}
         <Dialog open={showForm} onOpenChange={() => { setShowForm(false); setEditing(null); }}>
-          <DialogContent className="bg-[#111118] border-[#1E1E2E] text-white max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogContent className="theme-bg-secondary theme-border border theme-text-primary max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? 'Edit Review' : 'New Review'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSave} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2">
-                  <Label className="text-xs text-[#8B8BA7]">Review Type *</Label>
+                  <Label className="text-xs theme-text-secondary">Review Type *</Label>
                   <Select name="review_type" defaultValue={editing?.review_type || 'WEEKLY'}>
-                    <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1"><SelectValue /></SelectTrigger>
-                    <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                    <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent className="theme-bg-secondary theme-border border">
                       {REVIEW_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Period Start *</Label>
+                  <Label className="text-xs theme-text-secondary">Period Start *</Label>
                   <Input name="period_start" type="date" required defaultValue={editing?.period_start || ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Period End *</Label>
+                  <Label className="text-xs theme-text-secondary">Period End *</Label>
                   <Input name="period_end" type="date" required defaultValue={editing?.period_end || ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Total Trades</Label>
+                  <Label className="text-xs theme-text-secondary">Total Trades</Label>
                   <Input name="total_trades" type="number" defaultValue={editing?.total_trades ?? ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Win Rate (%)</Label>
+                  <Label className="text-xs theme-text-secondary">Win Rate (%)</Label>
                   <Input name="win_rate" type="number" step="0.01" defaultValue={editing?.win_rate ?? ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">P&L (USD)</Label>
+                  <Label className="text-xs theme-text-secondary">P&L (USD)</Label>
                   <Input name="pnl_usd" type="number" step="0.01" defaultValue={editing?.pnl_usd ?? ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">P&L (R)</Label>
+                  <Label className="text-xs theme-text-secondary">P&L (R)</Label>
                   <Input name="pnl_r" type="number" step="0.01" defaultValue={editing?.pnl_r ?? ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Risk Compliance (%)</Label>
+                  <Label className="text-xs theme-text-secondary">Risk Compliance (%)</Label>
                   <Input name="risk_compliance_percent" type="number" step="0.01" defaultValue={editing?.risk_compliance_percent ?? ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Overall Rating (1-5)</Label>
+                  <Label className="text-xs theme-text-secondary">Overall Rating (1-5)</Label>
                   <Input name="overall_rating" type="number" min="1" max="5" defaultValue={editing?.overall_rating ?? ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Lessons Learned</Label>
+                <Label className="text-xs theme-text-secondary">Lessons Learned</Label>
                 <Textarea name="lessons_learned" rows={3} defaultValue={editing?.lessons_learned || ''}
-                  placeholder="What did you learn this period..." className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                  placeholder="What did you learn this period..." className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Improvement Goals</Label>
+                <Label className="text-xs theme-text-secondary">Improvement Goals</Label>
                 <Textarea name="improvement_goals" rows={3} defaultValue={editing?.improvement_goals || ''}
-                  placeholder="What to improve next period..." className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                  placeholder="What to improve next period..." className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditing(null); }}
-                  className="border-[#1E1E2E] text-[#8B8BA7] bg-transparent">Cancel</Button>
+                  className="theme-border border theme-text-secondary !bg-transparent">Cancel</Button>
                 <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Save Review</Button>
               </div>
             </form>

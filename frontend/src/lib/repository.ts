@@ -31,13 +31,14 @@ export const authRepo = {
     return data;
   },
 
-   async signInWithGoogle() {
+  async signInWithGoogle() {
     checkConnection();
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/dashboard'
-      }
+        redirectTo: window.location.origin + '/dashboard',
+        queryParams: { prompt: 'select_account' },
+      },
     });
     if (error) throw error;
   },

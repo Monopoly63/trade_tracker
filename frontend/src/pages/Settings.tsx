@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Shield, Settings as SettingsIcon, Sun, Moon, Monitor } from 'lucide-react';
+import { Plus, Edit, Trash2, Shield, Settings as SettingsIcon, Sun, Moon } from 'lucide-react';
 
 export default function Settings() {
   const { theme, toggleTheme } = useTheme();
@@ -73,18 +73,28 @@ export default function Settings() {
     try {
       await riskRulesRepo.delete(id);
       setRules(rules.filter((r) => r.id !== id));
-      toast.success('Risk rule deleted');
+      toast.success('Rule deleted');
     } catch {
       toast.error('Failed to delete');
     }
   };
 
+  const handleToggleActive = async (rule: RiskRule) => {
+    try {
+      const updated = await riskRulesRepo.update(rule.id, { is_active: !rule.is_active });
+      setRules(rules.map((r) => (r.id === rule.id ? updated : r)));
+      toast.success(updated.is_active ? 'Rule activated' : 'Rule deactivated');
+    } catch {
+      toast.error('Failed to toggle');
+    }
+  };
+
   return (
     <DashboardLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 max-w-3xl">
         <div>
           <h1 className="text-2xl font-bold theme-text-primary">Settings</h1>
-          <p className="theme-text-secondary text-sm mt-1">Manage your account, appearance, and risk rules</p>
+          <p className="theme-text-secondary text-sm mt-1">Manage your account and risk rules</p>
         </div>
 
         {loading ? (
@@ -98,53 +108,39 @@ export default function Settings() {
                   <SettingsIcon className="w-4 h-4" /> Account
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 p-3 theme-bg-tertiary rounded-lg">
-                  <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center">
-                    <span className="text-lg font-bold text-indigo-400">{userEmail.charAt(0).toUpperCase()}</span>
-                  </div>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-3 theme-bg-tertiary rounded-lg">
                   <div>
-                    <p className="theme-text-primary font-medium">{userEmail}</p>
-                    <p className="text-xs theme-text-secondary">User ID: {userId.slice(0, 8)}...</p>
+                    <p className="text-xs theme-text-secondary">Email</p>
+                    <p className="text-sm theme-text-primary font-mono">{userEmail}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between p-3 theme-bg-tertiary rounded-lg">
+                  <div>
+                    <p className="text-xs theme-text-secondary">User ID</p>
+                    <p className="text-sm theme-text-primary font-mono text-[10px]">{userId}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Appearance */}
+            {/* Theme Toggle */}
             <Card className="theme-bg-secondary theme-border border">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm theme-text-secondary uppercase tracking-wider flex items-center gap-2">
-                  <Monitor className="w-4 h-4" /> Appearance
+                  {theme === 'dark' ? <Moon className="w-4 h-4" /> : <Sun className="w-4 h-4" />} Appearance
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center justify-between p-4 theme-bg-tertiary rounded-lg">
+                <div className="flex items-center justify-between p-3 theme-bg-tertiary rounded-lg">
                   <div className="flex items-center gap-3">
-                    {theme === 'dark' ? (
-                      <Moon className="w-5 h-5 text-indigo-400" />
-                    ) : (
-                      <Sun className="w-5 h-5 text-amber-500" />
-                    )}
+                    <Sun className="w-4 h-4 theme-text-secondary" />
                     <div>
-                      <p className="theme-text-primary font-medium">
-                        {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
-                      </p>
-                      <p className="text-xs theme-text-secondary">
-                        {theme === 'dark'
-                          ? 'Using dark theme for comfortable night trading'
-                          : 'Using light theme for daytime visibility'}
-                      </p>
+                      <p className="text-sm theme-text-primary">Dark Mode</p>
+                      <p className="text-xs theme-text-secondary">Toggle between light and dark theme</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <Sun className={`w-4 h-4 ${theme === 'light' ? 'text-amber-500' : 'theme-text-secondary'}`} />
-                    <Switch
-                      checked={theme === 'dark'}
-                      onCheckedChange={toggleTheme}
-                    />
-                    <Moon className={`w-4 h-4 ${theme === 'dark' ? 'text-indigo-400' : 'theme-text-secondary'}`} />
-                  </div>
+                  <Switch checked={theme === 'dark'} onCheckedChange={toggleTheme} />
                 </div>
               </CardContent>
             </Card>
@@ -155,60 +151,61 @@ export default function Settings() {
                 <CardTitle className="text-sm theme-text-secondary uppercase tracking-wider flex items-center gap-2">
                   <Shield className="w-4 h-4" /> Risk Rules
                 </CardTitle>
-                <Button size="sm" onClick={() => { setEditingRule(null); setShowRuleForm(true); }}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white">
+                <Button variant="ghost" size="sm" onClick={() => { setEditingRule(null); setShowRuleForm(true); }}
+                  className="theme-text-secondary hover:theme-text-primary">
                   <Plus className="w-4 h-4 mr-1" /> Add Rule
                 </Button>
               </CardHeader>
               <CardContent>
                 {rules.length === 0 ? (
-                  <p className="theme-text-secondary text-sm text-center py-8">
-                    No risk rules defined. Add one to track your risk compliance.
-                  </p>
+                  <p className="theme-text-secondary text-sm">No risk rules configured. Add one to track your discipline.</p>
                 ) : (
                   <div className="space-y-3">
                     {rules.map((rule) => (
-                      <div key={rule.id} className="flex items-center justify-between p-4 theme-bg-tertiary rounded-lg">
-                        <div className="space-y-2">
+                      <div key={rule.id} className="p-4 theme-bg-tertiary rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-2">
                             <Badge variant="outline" className={rule.is_active ? 'text-[#00C896] border-[#00C896]/30' : 'theme-text-secondary border-current/30'}>
                               {rule.is_active ? 'Active' : 'Inactive'}
                             </Badge>
                           </div>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                            <div>
-                              <span className="theme-text-secondary text-xs">Max Risk/Trade</span>
-                              <p className="font-mono theme-text-primary">{rule.max_risk_per_trade}%</p>
-                            </div>
-                            {rule.max_daily_loss && (
-                              <div>
-                                <span className="theme-text-secondary text-xs">Max Daily Loss</span>
-                                <p className="font-mono theme-text-primary">{rule.max_daily_loss}%</p>
-                              </div>
-                            )}
-                            {rule.max_weekly_loss && (
-                              <div>
-                                <span className="theme-text-secondary text-xs">Max Weekly Loss</span>
-                                <p className="font-mono theme-text-primary">{rule.max_weekly_loss}%</p>
-                              </div>
-                            )}
-                            <div>
-                              <span className="theme-text-secondary text-xs">Max Cons. Losses</span>
-                              <p className="font-mono theme-text-primary">{rule.max_consecutive_losses}</p>
-                            </div>
+                          <div className="flex items-center gap-1">
+                            <Switch checked={rule.is_active} onCheckedChange={() => handleToggleActive(rule)} />
+                            <Button variant="ghost" size="icon" className="h-7 w-7 theme-text-secondary hover:theme-text-primary"
+                              onClick={() => { setEditingRule(rule); setShowRuleForm(true); }}>
+                              <Edit className="w-3.5 h-3.5" />
+                            </Button>
+                            <Button variant="ghost" size="icon" className="h-7 w-7 theme-text-secondary hover:text-red-400"
+                              onClick={() => handleDeleteRule(rule.id)}>
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
                           </div>
-                          {rule.notes && <p className="text-xs theme-text-secondary">{rule.notes}</p>}
                         </div>
-                        <div className="flex gap-1 shrink-0 ml-4">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:text-white"
-                            onClick={() => { setEditingRule(rule); setShowRuleForm(true); }}>
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:text-red-400"
-                            onClick={() => handleDeleteRule(rule.id)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                          <div>
+                            <p className="text-[10px] theme-text-secondary uppercase">Max Risk/Trade</p>
+                            <p className="font-mono font-bold theme-text-primary">{rule.max_risk_per_trade}%</p>
+                          </div>
+                          {rule.max_daily_loss && (
+                            <div>
+                              <p className="text-[10px] theme-text-secondary uppercase">Max Daily Loss</p>
+                              <p className="font-mono font-bold theme-text-primary">{rule.max_daily_loss}%</p>
+                            </div>
+                          )}
+                          {rule.max_weekly_loss && (
+                            <div>
+                              <p className="text-[10px] theme-text-secondary uppercase">Max Weekly Loss</p>
+                              <p className="font-mono font-bold theme-text-primary">{rule.max_weekly_loss}%</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-[10px] theme-text-secondary uppercase">Max Cons. Losses</p>
+                            <p className="font-mono font-bold theme-text-primary">{rule.max_consecutive_losses}</p>
+                          </div>
                         </div>
+                        {rule.notes && (
+                          <p className="text-sm theme-text-secondary mt-2 italic">{rule.notes}</p>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -218,48 +215,48 @@ export default function Settings() {
           </>
         )}
 
-        {/* Risk Rule Form Dialog */}
+        {/* Rule Form Dialog */}
         <Dialog open={showRuleForm} onOpenChange={() => { setShowRuleForm(false); setEditingRule(null); }}>
-          <DialogContent className="bg-[#111118] border-[#1E1E2E] text-white">
+          <DialogContent className="theme-bg-secondary theme-border border theme-text-primary">
             <DialogHeader>
               <DialogTitle>{editingRule ? 'Edit Risk Rule' : 'New Risk Rule'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSaveRule} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Max Risk per Trade (%) *</Label>
+                  <Label className="text-xs theme-text-secondary">Max Risk per Trade (%) *</Label>
                   <Input name="max_risk_per_trade" type="number" step="0.01" required
-                    defaultValue={editingRule?.max_risk_per_trade || 1}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    defaultValue={editingRule?.max_risk_per_trade ?? 1}
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Max Daily Loss (%)</Label>
+                  <Label className="text-xs theme-text-secondary">Max Daily Loss (%)</Label>
                   <Input name="max_daily_loss" type="number" step="0.01"
-                    defaultValue={editingRule?.max_daily_loss || ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    defaultValue={editingRule?.max_daily_loss ?? ''}
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Max Weekly Loss (%)</Label>
+                  <Label className="text-xs theme-text-secondary">Max Weekly Loss (%)</Label>
                   <Input name="max_weekly_loss" type="number" step="0.01"
-                    defaultValue={editingRule?.max_weekly_loss || ''}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    defaultValue={editingRule?.max_weekly_loss ?? ''}
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
                 <div>
-                  <Label className="text-xs text-[#8B8BA7]">Max Consecutive Losses</Label>
+                  <Label className="text-xs theme-text-secondary">Max Consecutive Losses</Label>
                   <Input name="max_consecutive_losses" type="number"
-                    defaultValue={editingRule?.max_consecutive_losses || 3}
-                    className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                    defaultValue={editingRule?.max_consecutive_losses ?? 3}
+                    className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Notes</Label>
+                <Label className="text-xs theme-text-secondary">Notes</Label>
                 <Textarea name="notes" rows={2} defaultValue={editingRule?.notes || ''}
-                  className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                  className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => { setShowRuleForm(false); setEditingRule(null); }}
-                  className="border-[#1E1E2E] text-[#8B8BA7] bg-transparent">Cancel</Button>
-                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Save</Button>
+                  className="theme-border border theme-text-secondary !bg-transparent">Cancel</Button>
+                <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Save Rule</Button>
               </div>
             </form>
           </DialogContent>

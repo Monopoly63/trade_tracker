@@ -27,20 +27,17 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
+  const isDark = theme === 'dark';
+
   useEffect(() => {
-    authRepo.getSession().then((session) => {
+    (async () => {
+      const session = await authRepo.getSession();
       if (!session?.user) {
         navigate('/');
         return;
       }
       setUser(session.user);
-    });
-
-    const { data } = authRepo.onAuthStateChange((_event, session) => {
-      if (!session) navigate('/');
-      else setUser(session.user);
-    });
-    return () => data.subscription.unsubscribe();
+    })();
   }, [navigate]);
 
   const handleSignOut = async () => {
@@ -48,67 +45,58 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     navigate('/');
   };
 
-  if (!user) return null;
-
-  const isDark = theme === 'dark';
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center theme-bg-primary">
+        <div className="w-6 h-6 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className={`flex h-screen overflow-hidden ${isDark ? 'bg-[#0A0A0F] text-white' : 'bg-[#F8F9FA] text-[#1A1A2E]'}`}>
+    <div className="min-h-screen flex theme-bg-primary">
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
       <aside
         className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col border-r transition-all duration-300
-          ${isDark ? 'border-[#1E1E2E] bg-[#111118]' : 'border-[#E2E4E9] bg-white'}
+          ${isDark ? 'border-[var(--theme-border)] bg-[var(--theme-bg-secondary)]' : 'border-[var(--theme-border)] bg-[var(--theme-bg-secondary)]'}
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${collapsed ? 'w-16' : 'w-64'}
         `}
       >
-        <div className={`flex items-center h-16 border-b px-4 ${isDark ? 'border-[#1E1E2E]' : 'border-[#E2E4E9]'} ${collapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`flex items-center h-16 border-b px-4 theme-border ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <TrendingUp className="w-6 h-6 text-indigo-500" />
-              <span className="font-bold text-lg">TradeJournal</span>
+              <span className="font-bold theme-text-primary">TradeJournal</span>
             </Link>
           )}
-          {collapsed && <TrendingUp className="w-6 h-6 text-indigo-500" />}
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`hidden lg:flex h-8 w-8 ${isDark ? 'text-[#8B8BA7] hover:text-white' : 'text-[#6B7280] hover:text-[#1A1A2E]'}`}
-            onClick={() => setCollapsed(!collapsed)}
-          >
+          <button onClick={() => setCollapsed(!collapsed)} className="theme-text-secondary hover:theme-text-primary hidden lg:block">
             <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`lg:hidden ${isDark ? 'text-[#8B8BA7] hover:text-white' : 'text-[#6B7280] hover:text-[#1A1A2E]'}`}
-            onClick={() => setSidebarOpen(false)}
-          >
+          </button>
+          <button onClick={() => setSidebarOpen(false)} className="theme-text-secondary lg:hidden">
             <X className="w-5 h-5" />
-          </Button>
+          </button>
         </div>
 
-        <nav className="flex-1 py-4 space-y-1 px-2 overflow-y-auto">
+        <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || location.pathname.startsWith(item.path + '/');
+            const isActive = location.pathname === item.path;
             return (
               <Link
                 key={item.path}
                 to={item.path}
                 onClick={() => setSidebarOpen(false)}
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
-                  ${isActive
-                    ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                    : isDark
-                      ? 'text-[#8B8BA7] hover:text-white hover:bg-white/5'
-                      : 'text-[#6B7280] hover:text-[#1A1A2E] hover:bg-black/5'
-                  }
                   ${collapsed ? 'justify-center' : ''}
+                  ${isActive
+                    ? 'bg-indigo-500/10 text-indigo-500'
+                    : 'theme-text-secondary hover:theme-text-primary hover:bg-[var(--theme-bg-tertiary)]'
+                  }
                 `}
                 title={collapsed ? item.label : undefined}
               >
@@ -119,45 +107,33 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className={`p-3 border-t ${isDark ? 'border-[#1E1E2E]' : 'border-[#E2E4E9]'}`}>
+        <div className={`border-t theme-border p-3 ${collapsed ? 'flex justify-center' : ''}`}>
           <Button
             variant="ghost"
             onClick={handleSignOut}
-            className={`w-full hover:text-red-400 hover:bg-red-500/10 ${isDark ? 'text-[#8B8BA7]' : 'text-[#6B7280]'} ${collapsed ? 'px-0 justify-center' : 'justify-start'}`}
+            className={`theme-text-secondary hover:text-red-400 ${collapsed ? 'w-10 h-10 p-0' : 'w-full justify-start gap-2'}`}
+            title={collapsed ? 'Sign Out' : undefined}
           >
-            <LogOut className="w-4 h-4 shrink-0" />
-            {!collapsed && <span className="ml-2">Sign Out</span>}
+            <LogOut className="w-4 h-4" />
+            {!collapsed && <span>Sign Out</span>}
           </Button>
         </div>
       </aside>
 
-      {/* Main content */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Top bar */}
-        <header className={`h-16 border-b flex items-center px-4 lg:px-6 shrink-0 ${isDark ? 'border-[#1E1E2E] bg-[#111118]' : 'border-[#E2E4E9] bg-white'}`}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className={`lg:hidden mr-3 ${isDark ? 'text-[#8B8BA7] hover:text-white' : 'text-[#6B7280] hover:text-[#1A1A2E]'}`}
-            onClick={() => setSidebarOpen(true)}
-          >
+      {/* Main Content */}
+      <main className="flex-1 min-w-0">
+        {/* Mobile header */}
+        <div className="lg:hidden flex items-center h-14 border-b theme-border px-4 theme-bg-secondary">
+          <button onClick={() => setSidebarOpen(true)} className="theme-text-secondary">
             <Menu className="w-5 h-5" />
-          </Button>
-          <div className="flex-1" />
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
-              <span className="text-xs font-bold text-indigo-400">
-                {user.email?.charAt(0).toUpperCase()}
-              </span>
-            </div>
-          </div>
-        </header>
+          </button>
+          <span className="ml-3 font-bold theme-text-primary">TradeJournal</span>
+        </div>
 
-        {/* Page content */}
-        <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+        <div className="p-4 md:p-6 lg:p-8">
           {children}
-        </main>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

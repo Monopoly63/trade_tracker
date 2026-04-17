@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Target, TrendingUp } from 'lucide-react';
+import { Plus, Edit, Trash2, Target } from 'lucide-react';
 
 export default function Strategies() {
   const [userId, setUserId] = useState('');
@@ -82,8 +82,8 @@ export default function Strategies() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-white">Strategies</h1>
-            <p className="text-[#8B8BA7] text-sm mt-1">Manage and compare your trading strategies</p>
+            <h1 className="text-2xl font-bold theme-text-primary">Strategies</h1>
+            <p className="theme-text-secondary text-sm mt-1">Manage and compare your trading strategies</p>
           </div>
           <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }} className="bg-indigo-600 hover:bg-indigo-700 text-white">
             <Plus className="w-4 h-4 mr-1" /> New Strategy
@@ -91,13 +91,13 @@ export default function Strategies() {
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-[#8B8BA7]">Loading...</div>
+          <div className="text-center py-16 theme-text-secondary">Loading...</div>
         ) : strategies.length === 0 ? (
-          <Card className="bg-[#111118] border-[#1E1E2E]">
+          <Card className="theme-bg-secondary theme-border border">
             <CardContent className="flex flex-col items-center py-16">
-              <Target className="w-12 h-12 text-[#8B8BA7] mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">No strategies yet</h3>
-              <p className="text-[#8B8BA7] text-sm">Create strategies to categorize and compare your trades</p>
+              <Target className="w-12 h-12 theme-text-secondary mb-4" />
+              <h3 className="text-lg font-semibold theme-text-primary mb-2">No strategies yet</h3>
+              <p className="theme-text-secondary text-sm">Create strategies to categorize and compare your trades</p>
             </CardContent>
           </Card>
         ) : (
@@ -105,21 +105,21 @@ export default function Strategies() {
             {strategies.map((strategy) => {
               const perf = getPerf(strategy.id);
               return (
-                <Card key={strategy.id} className="bg-[#111118] border-[#1E1E2E]">
+                <Card key={strategy.id} className="theme-bg-secondary theme-border border">
                   <CardHeader className="flex flex-row items-start justify-between pb-2">
                     <div>
-                      <CardTitle className="text-white flex items-center gap-2">
+                      <CardTitle className="theme-text-primary flex items-center gap-2">
                         {strategy.name}
-                        {!strategy.is_active && <Badge variant="outline" className="text-[#8B8BA7] border-[#8B8BA7]/30 text-[10px]">Inactive</Badge>}
+                        {!strategy.is_active && <Badge variant="outline" className="theme-text-secondary border-current/30 text-[10px]">Inactive</Badge>}
                       </CardTitle>
-                      {strategy.description && <p className="text-sm text-[#8B8BA7] mt-1">{strategy.description}</p>}
+                      {strategy.description && <p className="text-sm theme-text-secondary mt-1">{strategy.description}</p>}
                     </div>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-white"
+                      <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:theme-text-primary"
                         onClick={() => { setEditing(strategy); setShowForm(true); }}>
                         <Edit className="w-4 h-4" />
                       </Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-red-400"
+                      <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:text-red-400"
                         onClick={() => handleDelete(strategy.id)}>
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -128,30 +128,30 @@ export default function Strategies() {
                   <CardContent>
                     {perf ? (
                       <div className="grid grid-cols-3 gap-3">
-                        <div className="bg-[#0A0A0F] rounded-lg p-3 text-center">
-                          <p className="text-xs text-[#8B8BA7]">Win Rate</p>
+                        <div className="theme-bg-tertiary rounded-lg p-3 text-center">
+                          <p className="text-xs theme-text-secondary">Win Rate</p>
                           <p className={`font-mono font-bold ${perf.winRate >= 50 ? 'text-[#00C896]' : 'text-[#FF4D6D]'}`}>
                             {formatPercent(perf.winRate)}
                           </p>
                         </div>
-                        <div className="bg-[#0A0A0F] rounded-lg p-3 text-center">
-                          <p className="text-xs text-[#8B8BA7]">P&L</p>
+                        <div className="theme-bg-tertiary rounded-lg p-3 text-center">
+                          <p className="text-xs theme-text-secondary">P&L</p>
                           <p className={`font-mono font-bold ${perf.totalPnlR >= 0 ? 'text-[#00C896]' : 'text-[#FF4D6D]'}`}>
                             {formatR(perf.totalPnlR)}
                           </p>
                         </div>
-                        <div className="bg-[#0A0A0F] rounded-lg p-3 text-center">
-                          <p className="text-xs text-[#8B8BA7]">Trades</p>
-                          <p className="font-mono font-bold text-white">{perf.totalTrades}</p>
+                        <div className="theme-bg-tertiary rounded-lg p-3 text-center">
+                          <p className="text-xs theme-text-secondary">Trades</p>
+                          <p className="font-mono font-bold theme-text-primary">{perf.totalTrades}</p>
                         </div>
                       </div>
                     ) : (
-                      <p className="text-sm text-[#8B8BA7] italic">No closed trades with this strategy yet</p>
+                      <p className="text-sm theme-text-secondary italic">No closed trades with this strategy yet</p>
                     )}
                     {strategy.rules && (
-                      <div className="mt-3 p-3 bg-[#0A0A0F] rounded-lg">
-                        <p className="text-xs text-[#8B8BA7] mb-1">Rules</p>
-                        <p className="text-sm text-white whitespace-pre-wrap">{strategy.rules}</p>
+                      <div className="mt-3 p-3 theme-bg-tertiary rounded-lg">
+                        <p className="text-xs theme-text-secondary mb-1">Rules</p>
+                        <p className="text-sm theme-text-primary whitespace-pre-wrap">{strategy.rules}</p>
                       </div>
                     )}
                   </CardContent>
@@ -163,26 +163,26 @@ export default function Strategies() {
 
         {/* Strategy Form Dialog */}
         <Dialog open={showForm} onOpenChange={() => { setShowForm(false); setEditing(null); }}>
-          <DialogContent className="bg-[#111118] border-[#1E1E2E] text-white">
+          <DialogContent className="theme-bg-secondary theme-border border theme-text-primary">
             <DialogHeader>
               <DialogTitle>{editing ? 'Edit Strategy' : 'New Strategy'}</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSave} className="space-y-4">
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Name *</Label>
-                <Input name="name" required defaultValue={editing?.name || ''} className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                <Label className="text-xs theme-text-secondary">Name *</Label>
+                <Input name="name" required defaultValue={editing?.name || ''} className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Description</Label>
-                <Textarea name="description" rows={2} defaultValue={editing?.description || ''} className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                <Label className="text-xs theme-text-secondary">Description</Label>
+                <Textarea name="description" rows={2} defaultValue={editing?.description || ''} className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Rules</Label>
-                <Textarea name="rules" rows={3} defaultValue={editing?.rules || ''} placeholder="Entry/exit rules for this strategy..." className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+                <Label className="text-xs theme-text-secondary">Rules</Label>
+                <Textarea name="rules" rows={3} defaultValue={editing?.rules || ''} placeholder="Entry/exit rules for this strategy..." className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
               </div>
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => { setShowForm(false); setEditing(null); }}
-                  className="border-[#1E1E2E] text-[#8B8BA7] bg-transparent">Cancel</Button>
+                  className="theme-border border theme-text-secondary !bg-transparent">Cancel</Button>
                 <Button type="submit" className="bg-indigo-600 hover:bg-indigo-700 text-white">Save</Button>
               </div>
             </form>

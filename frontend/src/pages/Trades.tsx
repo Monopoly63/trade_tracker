@@ -5,7 +5,7 @@ import { authRepo, tradesRepo, strategiesRepo, tradeTagsRepo } from '@/lib/repos
 import { formatCurrency, formatR, formatDateTime, exportTradesToCSV, downloadCSV } from '@/lib/services';
 import type { Trade, TradeFormData, TradeFilters, Strategy } from '@/lib/types';
 import { TRADE_DIRECTIONS, TRADE_SESSIONS, TRADE_STATUSES, EMOTIONAL_STATES, TIMEFRAMES } from '@/lib/types';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -54,7 +54,6 @@ export default function Trades() {
       const strats = await strategiesRepo.getAll(session.user.id);
       setStrategies(strats);
 
-      // Load all unique tags for filter
       try {
         const userTags = await tradeTagsRepo.getAllByUser(session.user.id);
         const uniqueTags = [...new Set(userTags.map((t) => t.tag))].sort();
@@ -94,16 +93,16 @@ export default function Trades() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-bold text-white">Trades</h1>
-            <p className="text-[#8B8BA7] text-sm">{totalCount} total trades</p>
+            <h1 className="text-2xl font-bold theme-text-primary">Trades</h1>
+            <p className="theme-text-secondary text-sm">{totalCount} total trades</p>
           </div>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)}
-              className="border-[#1E1E2E] text-[#8B8BA7] hover:text-white bg-transparent">
+              className="theme-border border theme-text-secondary hover:opacity-80 !bg-transparent">
               <Filter className="w-4 h-4 mr-1" /> Filters
             </Button>
             <Button variant="outline" size="sm" onClick={handleExport}
-              className="border-[#1E1E2E] text-[#8B8BA7] hover:text-white bg-transparent">
+              className="theme-border border theme-text-secondary hover:opacity-80 !bg-transparent">
               <Download className="w-4 h-4 mr-1" /> CSV
             </Button>
             <Button size="sm" onClick={() => setShowForm(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white">
@@ -114,52 +113,52 @@ export default function Trades() {
 
         {/* Filters */}
         {showFilters && (
-          <Card className="bg-[#111118] border-[#1E1E2E]">
+          <Card className="theme-bg-secondary theme-border border">
             <CardContent className="p-4 grid grid-cols-2 md:grid-cols-5 gap-3">
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Instrument</Label>
+                <Label className="text-xs theme-text-secondary">Instrument</Label>
                 <div className="relative mt-1">
-                  <Search className="absolute left-2 top-2.5 w-3.5 h-3.5 text-[#8B8BA7]" />
+                  <Search className="absolute left-2 top-2.5 w-3.5 h-3.5 theme-text-secondary" />
                   <Input placeholder="e.g. EURUSD" value={filters.instrument || ''}
                     onChange={(e) => { setFilters({ ...filters, instrument: e.target.value || undefined }); setPage(0); }}
-                    className="pl-8 bg-[#0A0A0F] border-[#1E1E2E] text-white text-sm h-9" />
+                    className="pl-8 theme-bg-tertiary theme-border border theme-text-primary text-sm h-9" />
                 </div>
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Status</Label>
+                <Label className="text-xs theme-text-secondary">Status</Label>
                 <Select value={filters.status || 'all'} onValueChange={(v) => { setFilters({ ...filters, status: v === 'all' ? undefined : v as TradeFilters['status'] }); setPage(0); }}>
-                  <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                  <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent className="theme-bg-secondary theme-border border">
                     <SelectItem value="all">All</SelectItem>
                     {TRADE_STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Direction</Label>
+                <Label className="text-xs theme-text-secondary">Direction</Label>
                 <Select value={filters.direction || 'all'} onValueChange={(v) => { setFilters({ ...filters, direction: v === 'all' ? undefined : v as TradeFilters['direction'] }); setPage(0); }}>
-                  <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                  <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent className="theme-bg-secondary theme-border border">
                     <SelectItem value="all">All</SelectItem>
                     {TRADE_DIRECTIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Session</Label>
+                <Label className="text-xs theme-text-secondary">Session</Label>
                 <Select value={filters.session || 'all'} onValueChange={(v) => { setFilters({ ...filters, session: v === 'all' ? undefined : v as TradeFilters['session'] }); setPage(0); }}>
-                  <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                  <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent className="theme-bg-secondary theme-border border">
                     <SelectItem value="all">All</SelectItem>
                     {TRADE_SESSIONS.map((s) => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>
               <div>
-                <Label className="text-xs text-[#8B8BA7]">Tag</Label>
+                <Label className="text-xs theme-text-secondary">Tag</Label>
                 <Select value={filters.tag || 'all'} onValueChange={(v) => { setFilters({ ...filters, tag: v === 'all' ? undefined : v }); setPage(0); }}>
-                  <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
-                  <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                  <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent className="theme-bg-secondary theme-border border">
                     <SelectItem value="all">All</SelectItem>
                     {allTags.map((tag) => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
                   </SelectContent>
@@ -171,17 +170,17 @@ export default function Trades() {
 
         {/* Trade List */}
         {loading ? (
-          <div className="text-center py-16 text-[#8B8BA7]">Loading...</div>
+          <div className="text-center py-16 theme-text-secondary">Loading...</div>
         ) : trades.length === 0 ? (
-          <Card className="bg-[#111118] border-[#1E1E2E]">
-            <CardContent className="text-center py-16 text-[#8B8BA7]">
+          <Card className="theme-bg-secondary theme-border border">
+            <CardContent className="text-center py-16 theme-text-secondary">
               No trades found. Click "New Trade" to add one.
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-2">
             {trades.map((trade) => (
-              <Card key={trade.id} className="bg-[#111118] border-[#1E1E2E] hover:border-[#2E2E3E] transition-colors cursor-pointer"
+              <Card key={trade.id} className="theme-bg-secondary theme-border border theme-border-hover transition-colors cursor-pointer"
                 onClick={() => navigate(`/trades/${trade.id}`)}>
                 <CardContent className="p-4">
                   <div className="flex items-center justify-between">
@@ -196,17 +195,17 @@ export default function Trades() {
                       </div>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-bold text-white">{trade.instrument}</span>
+                          <span className="font-mono font-bold theme-text-primary">{trade.instrument}</span>
                           <Badge variant="outline" className={`text-[10px] ${
                             trade.direction === 'LONG' ? 'text-[#00C896] border-[#00C896]/30' : 'text-[#FF4D6D] border-[#FF4D6D]/30'
                           }`}>{trade.direction}</Badge>
                           <Badge variant="outline" className={`text-[10px] ${
-                            trade.status === 'CLOSED' ? 'text-[#8B8BA7] border-[#8B8BA7]/30' :
+                            trade.status === 'CLOSED' ? 'theme-text-secondary border-current/30' :
                             trade.status === 'OPEN' ? 'text-[#F0A500] border-[#F0A500]/30' :
-                            'text-[#8B8BA7] border-[#8B8BA7]/30'
+                            'theme-text-secondary border-current/30'
                           }`}>{trade.status}</Badge>
                         </div>
-                        <p className="text-xs text-[#8B8BA7] mt-0.5">
+                        <p className="text-xs theme-text-secondary mt-0.5">
                           {formatDateTime(trade.entry_time)}
                           {trade.strategy?.name && <span className="ml-2">• {trade.strategy.name}</span>}
                           {trade.session && <span className="ml-2">• {trade.session.replace('_', ' ')}</span>}
@@ -227,11 +226,11 @@ export default function Trades() {
                         )}
                       </div>
                       <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-white"
+                        <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:theme-text-primary"
                           onClick={() => navigate(`/trades/${trade.id}`)}>
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-red-400"
+                        <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:text-red-400"
                           onClick={() => handleDelete(trade.id)}>
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -247,15 +246,15 @@ export default function Trades() {
               <div className="flex items-center justify-center gap-2 pt-4">
                 <Button variant="outline" size="sm" disabled={page === 0}
                   onClick={() => setPage(page - 1)}
-                  className="border-[#1E1E2E] text-[#8B8BA7] bg-transparent">
+                  className="theme-border border theme-text-secondary !bg-transparent">
                   <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <span className="text-sm text-[#8B8BA7]">
+                <span className="text-sm theme-text-secondary">
                   Page {page + 1} of {totalPages}
                 </span>
                 <Button variant="outline" size="sm" disabled={page >= totalPages - 1}
                   onClick={() => setPage(page + 1)}
-                  className="border-[#1E1E2E] text-[#8B8BA7] bg-transparent">
+                  className="theme-border border theme-text-secondary !bg-transparent">
                   <ChevronRight className="w-4 h-4" />
                 </Button>
               </div>
@@ -327,108 +326,108 @@ function TradeFormDialog({ open, onClose, strategies, userId, onSaved }: {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="bg-[#111118] border-[#1E1E2E] text-white max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="theme-bg-secondary theme-border border theme-text-primary max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>New Trade</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Instrument *</Label>
-              <Input name="instrument" required placeholder="e.g. EURUSD" className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Instrument *</Label>
+              <Input name="instrument" required placeholder="e.g. EURUSD" className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Direction *</Label>
+              <Label className="text-xs theme-text-secondary">Direction *</Label>
               <Select name="direction" defaultValue="LONG">
-                <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1"><SelectValue /></SelectTrigger>
-                <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent className="theme-bg-secondary theme-border border">
                   {TRADE_DIRECTIONS.map((d) => <SelectItem key={d} value={d}>{d}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Entry Time *</Label>
-              <Input name="entry_time" type="datetime-local" required className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Entry Time *</Label>
+              <Input name="entry_time" type="datetime-local" required className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Exit Time</Label>
-              <Input name="exit_time" type="datetime-local" className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Exit Time</Label>
+              <Input name="exit_time" type="datetime-local" className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Entry Price *</Label>
-              <Input name="entry_price" type="number" step="any" required className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Entry Price *</Label>
+              <Input name="entry_price" type="number" step="any" required className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Exit Price</Label>
-              <Input name="exit_price" type="number" step="any" className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Exit Price</Label>
+              <Input name="exit_price" type="number" step="any" className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Stop Loss *</Label>
-              <Input name="stop_loss" type="number" step="any" required className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Stop Loss *</Label>
+              <Input name="stop_loss" type="number" step="any" required className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Take Profit</Label>
-              <Input name="take_profit" type="number" step="any" className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Take Profit</Label>
+              <Input name="take_profit" type="number" step="any" className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Position Size</Label>
-              <Input name="position_size" type="number" step="any" className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Position Size</Label>
+              <Input name="position_size" type="number" step="any" className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Risk %</Label>
-              <Input name="planned_risk_percent" type="number" step="0.01" placeholder="e.g. 1.0" className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Risk %</Label>
+              <Input name="planned_risk_percent" type="number" step="0.01" placeholder="e.g. 1.0" className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Session</Label>
+              <Label className="text-xs theme-text-secondary">Session</Label>
               <Select name="session">
-                <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent className="theme-bg-secondary theme-border border">
                   {TRADE_SESSIONS.map((s) => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Timeframe</Label>
+              <Label className="text-xs theme-text-secondary">Timeframe</Label>
               <Select name="timeframe">
-                <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent className="theme-bg-secondary theme-border border">
                   {TIMEFRAMES.map((tf) => <SelectItem key={tf} value={tf}>{tf}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Strategy</Label>
+              <Label className="text-xs theme-text-secondary">Strategy</Label>
               <Select name="strategy_id">
-                <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent className="theme-bg-secondary theme-border border">
                   {strategies.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Emotional State</Label>
+              <Label className="text-xs theme-text-secondary">Emotional State</Label>
               <Select name="emotional_state">
-                <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                <SelectTrigger className="theme-bg-tertiary theme-border border theme-text-primary mt-1"><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent className="theme-bg-secondary theme-border border">
                   {EMOTIONAL_STATES.map((e) => <SelectItem key={e} value={e}>{e}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div>
-              <Label className="text-xs text-[#8B8BA7]">Setup Quality (1-5)</Label>
-              <Input name="setup_quality" type="number" min="1" max="5" className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              <Label className="text-xs theme-text-secondary">Setup Quality (1-5)</Label>
+              <Input name="setup_quality" type="number" min="1" max="5" className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
             </div>
           </div>
           <div>
-            <Label className="text-xs text-[#8B8BA7]">Entry Reason</Label>
-            <Textarea name="entry_reason" rows={2} className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+            <Label className="text-xs theme-text-secondary">Entry Reason</Label>
+            <Textarea name="entry_reason" rows={2} className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
           </div>
           <div>
-            <Label className="text-xs text-[#8B8BA7]">Psychological Notes</Label>
-            <Textarea name="psychological_notes" rows={2} className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+            <Label className="text-xs theme-text-secondary">Psychological Notes</Label>
+            <Textarea name="psychological_notes" rows={2} className="theme-bg-tertiary theme-border border theme-text-primary mt-1" />
           </div>
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={onClose} className="border-[#1E1E2E] text-[#8B8BA7] bg-transparent">Cancel</Button>
+            <Button type="button" variant="outline" onClick={onClose} className="theme-border border theme-text-secondary !bg-transparent">Cancel</Button>
             <Button type="submit" disabled={saving} className="bg-indigo-600 hover:bg-indigo-700 text-white">
               {saving ? 'Saving...' : 'Save Trade'}
             </Button>
@@ -443,15 +442,15 @@ function TradeFormDialog({ open, onClose, strategies, userId, onSaved }: {
 
 function TradeDetailDialog({ trade, onClose }: { trade: Trade; onClose: () => void }) {
   const DetailRow = ({ label, value }: { label: string; value: React.ReactNode }) => (
-    <div className="flex justify-between py-2 border-b border-[#1E1E2E]">
-      <span className="text-[#8B8BA7] text-sm">{label}</span>
-      <span className="text-white text-sm font-mono">{value || '—'}</span>
+    <div className="flex justify-between py-2 border-b theme-border">
+      <span className="theme-text-secondary text-sm">{label}</span>
+      <span className="theme-text-primary text-sm font-mono">{value || '—'}</span>
     </div>
   );
 
   return (
     <Dialog open={!!trade} onOpenChange={onClose}>
-      <DialogContent className="bg-[#111118] border-[#1E1E2E] text-white max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="theme-bg-secondary theme-border border theme-text-primary max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <span className="font-mono">{trade.instrument}</span>
@@ -486,14 +485,14 @@ function TradeDetailDialog({ trade, onClose }: { trade: Trade; onClose: () => vo
           <DetailRow label="Followed Plan" value={trade.followed_plan ? 'Yes' : 'No'} />
           {trade.entry_reason && (
             <div className="pt-3">
-              <p className="text-xs text-[#8B8BA7] mb-1">Entry Reason</p>
-              <p className="text-sm text-white bg-[#0A0A0F] p-3 rounded-lg">{trade.entry_reason}</p>
+              <p className="text-xs theme-text-secondary mb-1">Entry Reason</p>
+              <p className="text-sm theme-text-primary theme-bg-tertiary p-3 rounded-lg">{trade.entry_reason}</p>
             </div>
           )}
           {trade.psychological_notes && (
             <div className="pt-3">
-              <p className="text-xs text-[#8B8BA7] mb-1">Psychological Notes</p>
-              <p className="text-sm text-white bg-[#0A0A0F] p-3 rounded-lg">{trade.psychological_notes}</p>
+              <p className="text-xs theme-text-secondary mb-1">Psychological Notes</p>
+              <p className="text-sm theme-text-primary theme-bg-tertiary p-3 rounded-lg">{trade.psychological_notes}</p>
             </div>
           )}
         </div>

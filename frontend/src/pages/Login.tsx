@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authRepo } from '@/lib/repository';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { isSupabaseConfigured } from '@/lib/supabase';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -62,13 +62,7 @@ export default function Login() {
     setGoogleLoading(true);
     setError('');
     try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/dashboard`,
-        },
-      });
-      if (oauthError) throw oauthError;
+      await authRepo.signInWithGoogle();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Google sign in failed');
       setGoogleLoading(false);
@@ -79,23 +73,23 @@ export default function Login() {
   const OrDivider = () => (
     <div className="relative my-1">
       <div className="absolute inset-0 flex items-center">
-        <span className="w-full border-t border-[#1E1E2E]" />
+        <span className="w-full border-t theme-border" />
       </div>
       <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-[#111118] px-2 text-[#8B8BA7]">or</span>
+        <span className="theme-bg-secondary px-2 theme-text-secondary">or</span>
       </div>
     </div>
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F] p-4">
+    <div className="min-h-screen flex items-center justify-center theme-bg-primary p-4">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500/10 mb-4">
             <TrendingUp className="w-8 h-8 text-indigo-500" />
           </div>
-          <h1 className="text-3xl font-bold text-white">TradeJournal</h1>
-          <p className="text-[#8B8BA7] mt-2">Trading Journal & Risk Analysis System</p>
+          <h1 className="text-3xl font-bold theme-text-primary">TradeJournal</h1>
+          <p className="theme-text-secondary mt-2">Trading Journal & Risk Analysis System</p>
         </div>
 
         {!isSupabaseConfigured && (
@@ -104,7 +98,7 @@ export default function Login() {
               <WifiOff className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
               <div className="text-sm">
                 <p className="font-semibold text-amber-500 mb-1">Supabase Not Connected</p>
-                <p className="text-[#8B8BA7]">
+                <p className="theme-text-secondary">
                   Please connect your Supabase project via the platform UI to enable authentication.
                 </p>
               </div>
@@ -112,10 +106,10 @@ export default function Login() {
           </Card>
         )}
 
-        <Card className="border-[#1E1E2E] bg-[#111118]">
+        <Card className="theme-border border theme-bg-secondary">
           <Tabs defaultValue="signin">
             <CardHeader className="pb-3">
-              <TabsList className="grid w-full grid-cols-2 bg-[#0A0A0F]">
+              <TabsList className="grid w-full grid-cols-2 theme-bg-tertiary">
                 <TabsTrigger value="signin">Sign In</TabsTrigger>
                 <TabsTrigger value="signup">Sign Up</TabsTrigger>
               </TabsList>
@@ -131,13 +125,13 @@ export default function Login() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn}>
                 <CardContent className="space-y-4">
-                  <CardDescription className="text-[#8B8BA7]">Sign in to your trading journal</CardDescription>
+                  <CardDescription className="theme-text-secondary">Sign in to your trading journal</CardDescription>
 
                   {/* Google OAuth Button */}
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-[#2A2A3A] bg-[#0A0A0F] hover:bg-[#1A1A2A] text-white gap-3 h-11"
+                    className="w-full theme-border border theme-bg-tertiary hover:opacity-80 theme-text-primary gap-3 h-11"
                     onClick={handleGoogleSignIn}
                     disabled={googleLoading || loading || !isSupabaseConfigured}
                   >
@@ -148,14 +142,14 @@ export default function Login() {
                   <OrDivider />
 
                   <div className="space-y-2">
-                    <Label htmlFor="si-email" className="text-[#8B8BA7]">Email</Label>
+                    <Label htmlFor="si-email" className="theme-text-secondary">Email</Label>
                     <Input id="si-email" name="email" type="email" placeholder="trader@example.com" required
-                      className="bg-[#0A0A0F] border-[#1E1E2E] text-white" />
+                      className="theme-bg-tertiary theme-border border theme-text-primary" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="si-pass" className="text-[#8B8BA7]">Password</Label>
+                    <Label htmlFor="si-pass" className="theme-text-secondary">Password</Label>
                     <Input id="si-pass" name="password" type="password" placeholder="••••••••" required
-                      className="bg-[#0A0A0F] border-[#1E1E2E] text-white" />
+                      className="theme-bg-tertiary theme-border border theme-text-primary" />
                   </div>
                   <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={loading || !isSupabaseConfigured}>
                     {loading ? 'Signing in...' : 'Sign In'}
@@ -167,13 +161,13 @@ export default function Login() {
             <TabsContent value="signup">
               <form onSubmit={handleSignUp}>
                 <CardContent className="space-y-4">
-                  <CardDescription className="text-[#8B8BA7]">Create a new account</CardDescription>
+                  <CardDescription className="theme-text-secondary">Create a new account</CardDescription>
 
                   {/* Google OAuth Button */}
                   <Button
                     type="button"
                     variant="outline"
-                    className="w-full border-[#2A2A3A] bg-[#0A0A0F] hover:bg-[#1A1A2A] text-white gap-3 h-11"
+                    className="w-full theme-border border theme-bg-tertiary hover:opacity-80 theme-text-primary gap-3 h-11"
                     onClick={handleGoogleSignIn}
                     disabled={googleLoading || loading || !isSupabaseConfigured}
                   >
@@ -184,14 +178,14 @@ export default function Login() {
                   <OrDivider />
 
                   <div className="space-y-2">
-                    <Label htmlFor="su-email" className="text-[#8B8BA7]">Email</Label>
+                    <Label htmlFor="su-email" className="theme-text-secondary">Email</Label>
                     <Input id="su-email" name="email" type="email" placeholder="trader@example.com" required
-                      className="bg-[#0A0A0F] border-[#1E1E2E] text-white" />
+                      className="theme-bg-tertiary theme-border border theme-text-primary" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="su-pass" className="text-[#8B8BA7]">Password</Label>
+                    <Label htmlFor="su-pass" className="theme-text-secondary">Password</Label>
                     <Input id="su-pass" name="password" type="password" placeholder="••••••••" minLength={6} required
-                      className="bg-[#0A0A0F] border-[#1E1E2E] text-white" />
+                      className="theme-bg-tertiary theme-border border theme-text-primary" />
                   </div>
                   <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white" disabled={loading || !isSupabaseConfigured}>
                     {loading ? 'Creating account...' : 'Create Account'}
