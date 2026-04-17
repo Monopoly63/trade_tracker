@@ -45,6 +45,19 @@ export default function Login() {
     }
   };
 
+
+  const handleGoogleLogin = async () => {
+  try {
+    setLoading(true)
+    setError('')
+    await authRepo.signInWithGoogle()
+  } catch (err: unknown) {
+    setError(err instanceof Error ? err.message : 'Google sign in failed')
+  } finally {
+    setLoading(false)
+  }
+}
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F] p-4">
       <div className="w-full max-w-md space-y-6">
