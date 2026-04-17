@@ -31,6 +31,21 @@ export const authRepo = {
     return data;
   },
 
+   async signInWithGoogle() {
+    checkConnection();
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin + '/dashboard'
+      }
+    });
+    if (error) throw error;
+  },
+
+  async signOut() { ... },
+
+};
+
   async signOut() {
     checkConnection();
     const { error } = await supabase.auth.signOut();
