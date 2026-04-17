@@ -102,7 +102,25 @@ export default function Login() {
             <TabsContent value="signin">
               <form onSubmit={handleSignIn}>
                 <CardContent className="space-y-4">
-                  <CardDescription className="text-[#8B8BA7]">Sign in to your trading journal</CardDescription>
+
+  <Button
+    type="button"
+    onClick={handleGoogleLogin}
+    variant="outline"
+    className="w-full bg-white text-black hover:bg-gray-200"
+    disabled={loading || !isSupabaseConfigured}
+  >
+    Continue with Google
+  </Button>
+
+  <div className="relative text-center text-sm text-[#8B8BA7]">
+    <span className="bg-[#111118] px-2 relative z-10">or</span>
+    <div className="absolute top-1/2 left-0 right-0 h-px bg-[#1E1E2E]" />
+  </div>
+
+  <CardDescription className="text-[#8B8BA7]">
+    Sign in to your trading journal
+  </CardDescription>
                   <div className="space-y-2">
                     <Label htmlFor="si-email" className="text-[#8B8BA7]">Email</Label>
                     <Input id="si-email" name="email" type="email" placeholder="trader@example.com" required
