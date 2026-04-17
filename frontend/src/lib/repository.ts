@@ -42,10 +42,6 @@ export const authRepo = {
     if (error) throw error;
   },
 
-  async signOut() { ... },
-
-};
-
   async signOut() {
     checkConnection();
     const { error } = await supabase.auth.signOut();
