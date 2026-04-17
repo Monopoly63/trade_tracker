@@ -21,6 +21,14 @@
 6. [Use Case Diagram](#6-use-case-diagram)
 7. [Use Case Descriptions](#7-use-case-descriptions)
 8. [UML Diagrams](#8-uml-diagrams)
+   - 8.1 [Use Case Diagram](#81-use-case-diagram)
+   - 8.2 [Activity Diagram](#82-activity-diagram)
+   - 8.3 [Sequence Diagram](#83-sequence-diagram)
+   - 8.4 [Class Diagram](#84-class-diagram)
+   - 8.5 [Entity-Relationship Diagram (ERD)](#85-entity-relationship-diagram-erd)
+   - 8.6 [Data Flow Diagram (DFD)](#86-data-flow-diagram-dfd)
+   - 8.7 [Component Diagram (Architecture)](#87-component-diagram-architecture)
+   - 8.8 [Deployment Diagram](#88-deployment-diagram)
 9. [Conclusion & Future Work](#9-conclusion--future-work)
 
 ---
@@ -507,6 +515,156 @@ The Class Diagram represents the data model and relationships between all entiti
 - **Trade** `1 → *` **TradeTag**: A trade can have many tags
 - **Trade** `1 → *` **Attachment**: A trade can have many attachments
 - **AnalyticsEngine** `..>` **Trade, TradeError, RiskRule**: Analyzes data across entities
+
+### 8.5 Entity-Relationship Diagram (ERD)
+
+The Entity-Relationship Diagram illustrates the complete database schema of the Trading Journal system, showing all tables, their attributes, data types, primary/foreign keys, and the relationships between entities.
+
+![ERD Diagram](erd-diagram.svg)
+
+**Entities & Relationships:**
+
+| Relationship | Cardinality | Description |
+|-------------|-------------|-------------|
+| **auth.users → app_strategies** | 1 : N | A user defines zero or more trading strategies |
+| **auth.users → app_risk_rules** | 1 : N | A user configures zero or more risk management rules |
+| **auth.users → app_trades** | 1 : N | A user owns zero or more trades |
+| **auth.users → app_trade_reviews** | 1 : N | A user writes zero or more periodic reviews |
+| **app_strategies → app_trades** | 1 : N | A strategy is optionally used by many trades (nullable FK) |
+| **app_trades → app_trade_errors** | 1 : N | A trade can have zero or more logged errors |
+| **app_trades → app_trade_tags** | 1 : N | A trade can have zero or more custom tags |
+| **app_trades → app_attachments** | 1 : N | A trade can have zero or more chart screenshots |
+
+**Key Design Decisions:**
+- All tables use **UUID** primary keys generated via `uuid_generate_v4()` for distributed uniqueness.
+- **Cascading deletes** are enforced: deleting a user removes all their data; deleting a trade removes its errors, tags, and attachments.
+- The `strategy_id` foreign key in `app_trades` uses `ON DELETE SET NULL` to preserve trade records when a strategy is deleted.
+- **CHECK constraints** enforce valid enum values for `direction`, `status`, `session`, `emotional_state`, `error_type`, `attachment_type`, and `review_type`.
+- The `app_trade_summary` SQL View (not shown) aggregates closed trade data per user for fast analytics queries.
+
+### 8.6 Data Flow Diagram (DFD)
+
+The Data Flow Diagram provides a comprehensive view of how data moves through the Trading Journal system, from user input through processing to storage and output. This is a Level 1 DFD decomposing the system into its major functional processes.
+
+![DFD Diagram](dfd-diagram.svg)
+
+**External Entities:**
+- **Individual Trader** — The primary actor who inputs trade data and receives analytics outputs
+- **Supabase Auth** — External authentication service handling JWT token issuance
+- **Supabase Storage** — External file storage service for chart screenshots
+
+**Processes:**
+
+| Process | Description |
+|---------|-------------|
+| **1.0 Authentication** | Handles user registration, login, logout, and session validation via JWT tokens |
+| **2.0 Trade Management** | Core CRUD operations for trades including automatic P&L calculation, filtering, and CSV export |
+| **3.0 Trade Enrichment** | Supplementary data operations: screenshot uploads, tag management, and error logging |
+| **4.0 Analytics Engine** | Aggregates closed trade data to compute KPIs, strategy performance, session analysis, and error frequency |
+| **5.0 Risk Management** | Manages risk rule definitions, checks trade compliance against active rules, and generates violation alerts |
+| **6.0 Reviews** | Handles creation and retrieval of periodic performance reviews (daily/weekly/monthly) |
+
+**Data Stores:**
+
+| Store | Table | Description |
+|-------|-------|-------------|
+| D1 | `app_trades` | Core trade records with full metadata |
+| D2 | `app_strategies` | User-defined trading strategies |
+| D3 | `app_risk_rules` | Risk management rules and thresholds |
+| D4 | `app_trade_errors` | Classified trading mistakes per trade |
+| D5 | `app_trade_tags` | Custom tags for trade categorization |
+| D6 | `app_attachments` | Chart screenshot metadata |
+| D7 | `app_trade_reviews` | Periodic performance reviews |
+| D8 | `app_trade_summary` | Pre-computed analytics view |
+
+**Key Data Flows:**
+1. **Trade Creation Flow:** Trader → Trade Data → Process 2.1 → P&L Calculation (2.2) → D1 (Trades Store)
+2. **Analytics Flow:** D1 + D8 → Process 4.1 → KPI Dashboard → Trader
+3. **Risk Compliance Flow:** D1 + D3 → Process 5.2 → Violations → Process 5.3 → Risk Alerts → Trader
+4. **File Upload Flow:** Trader → Image File → Process 3.1 → Supabase Storage + D6 → Signed URL → Trader
+
+### 8.7 Component Diagram (Architecture)
+
+The Component Diagram illustrates the software architecture of the Trading Journal system, showing the major components, their internal structure, and the interfaces between them across all architectural layers.
+
+![Component Diagram](component-diagram.svg)
+
+**Architectural Layers:**
+
+| Layer | Technology | Responsibility |
+|-------|-----------|---------------|
+| **Client Layer** | React 18 + TypeScript | User interface, routing, state management, and data access |
+| **Backend Layer** | Supabase Cloud | Authentication, database operations, file storage, and security |
+| **Hosting Layer** | Vercel Platform | Static file serving, CDN distribution, and environment configuration |
+
+**Client Layer Components:**
+
+| Component Group | Components | Description |
+|----------------|------------|-------------|
+| **Pages** | Login, Dashboard, Trades, TradeDetail, Analytics, Strategies, RiskReview, Reviews, Settings | Each page represents a distinct feature module with its own UI and business logic |
+| **Shared Components** | DashboardLayout, shadcn/ui Library, Theme Context | Reusable UI elements, layout wrapper, component library, and theme management |
+| **Data Access Layer** | authRepo, tradesRepo, strategiesRepo, riskRulesRepo, tradeErrorsRepo, tradeTagsRepo, attachmentsRepo, tradeReviewsRepo | Repository pattern modules that abstract all Supabase API calls into type-safe functions |
+| **Services Layer** | Formatting Services, CSV Export Service, Analytics Calculator | Utility modules for data formatting, file export, and client-side calculations |
+| **Router** | React Router v6 | Client-side navigation with protected route guards |
+
+**Backend Layer Components:**
+
+| Component | Technology | Responsibility |
+|-----------|-----------|---------------|
+| **Auth Service** | GoTrue (Auth API + JWT Manager + Session Store) | User registration, login, JWT issuance, and session lifecycle management |
+| **Database Service** | PostgREST + PostgreSQL 15 | Auto-generated REST API, application tables, RLS policies, SQL views, and performance indexes |
+| **Storage Service** | Storage API + S3-Compatible Storage | File upload/download, signed URL generation, and bucket management |
+
+**Key Interfaces:**
+- **Pages → Data Access Layer:** Pages call repository functions to perform CRUD operations
+- **Data Access Layer → Supabase:** Repositories use the Supabase JS client to communicate with backend services
+- **Auth → Database:** JWT tokens from Auth Service are used by RLS policies to enforce data isolation
+- **Vercel → React App:** Vercel serves the built SPA bundle and injects environment variables at build time
+
+### 8.8 Deployment Diagram
+
+The Deployment Diagram shows the physical infrastructure and deployment topology of the Trading Journal system, illustrating how software components are distributed across hardware nodes and cloud services.
+
+![Deployment Diagram](deployment-diagram.svg)
+
+**Deployment Nodes:**
+
+| Node | Provider | Components Deployed |
+|------|----------|-------------------|
+| **User Device** | End User | Web Browser (Chrome, Firefox, Safari) |
+| **CDN Edge Network** | Vercel | Global edge cache for static assets (JS, CSS, images) |
+| **Vercel Serverless** | Vercel | Static File Server (React SPA bundle), Environment Configuration |
+| **API Gateway** | Supabase | Kong API Gateway (rate limiting, request routing) |
+| **Authentication Node** | Supabase | GoTrue Auth Server (JWT issuance, session management) |
+| **Database Node** | Supabase | PostgREST API Server + PostgreSQL 15 (tables, RLS, views, indexes) |
+| **Storage Node** | Supabase | Storage API Server + S3-Compatible Object Storage |
+
+**Communication Protocols:**
+
+| Connection | Protocol | Description |
+|-----------|----------|-------------|
+| Browser → CDN | HTTPS | All client requests are encrypted via TLS |
+| CDN → Static Server | Internal | Cache miss forwarding to origin server |
+| Browser → API Gateway | HTTPS + JWT | All API calls include JWT Bearer token for authentication |
+| API Gateway → Auth | Internal | Routes `/auth/*` requests to GoTrue service |
+| API Gateway → Database | Internal | Routes `/rest/*` requests to PostgREST service |
+| API Gateway → Storage | Internal | Routes `/storage/*` requests to Storage API service |
+| PostgREST → PostgreSQL | TCP/SQL | Direct database connection with RLS enforcement |
+| Storage API → S3 | Internal | File I/O operations for chart screenshots |
+
+**Deployment Workflow:**
+1. Developer pushes code to GitHub repository
+2. Vercel detects the push and triggers an automated build (`pnpm run build`)
+3. Environment variables (`VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`) are injected at build time
+4. Built static assets are distributed to Vercel's global CDN edge network
+5. Users access the application via the custom domain (`trade-tracker.vercel.app`)
+6. CDN serves cached static assets; API calls are proxied to Supabase Cloud services
+
+**Scalability Characteristics:**
+- **Frontend:** Automatically scales via Vercel's serverless architecture and global CDN
+- **Database:** PostgreSQL on Supabase supports connection pooling and can scale vertically
+- **Storage:** S3-compatible storage provides virtually unlimited file storage capacity
+- **Authentication:** GoTrue handles concurrent sessions with stateless JWT verification
 
 ---
 
