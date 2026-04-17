@@ -3,9 +3,10 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/lib/supabase';
 
 /**
- * AuthCallback wraps the app and intercepts OAuth hash-fragment redirects.
- * When the URL contains an access_token in the hash (e.g. /dashboard#access_token=...),
- * it waits for Supabase to process the token and establish a session before rendering children.
+ * AuthCallback wraps the app and intercepts OAuth redirects.
+ * Handles two flows:
+ * 1. Hash-fragment: /dashboard#access_token=...
+ * 2. PKCE code flow: /dashboard?code=...
  */
 export default function AuthCallback({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
@@ -16,25 +17,40 @@ export default function AuthCallback({ children }: { children: React.ReactNode }
     const hash = window.location.hash;
     const hasOAuthToken = hash.includes('access_token=');
 
-    if (!hasOAuthToken) {
+    const searchParams = new URLSearchParams(window.location.search);
+    const code = searchParams.get('code');
+
+    if (!hasOAuthToken && !code) {
       // No OAuth redirect — render immediately
       setReady(true);
       return;
     }
 
-    // OAuth redirect detected — wait for Supabase to process the hash fragment
+    if (code) {
+      // PKCE code flow: exchange the code for a session
+      supabase.auth.exchangeCodeForSession(code).then(({ data, error }) => {
+        if (error) {
+          console.error('Failed to exchange code for session:', error.message);
+        }
+        const targetPath = location.pathname || '/dashboard';
+        setReady(true);
+        // Clean up the URL by removing the ?code= query param
+        navigate(targetPath, { replace: true });
+      });
+      return;
+    }
+
+    // Hash-fragment flow: wait for Supabase to process the token
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === 'SIGNED_IN' && session) {
-        // Session established — clear the hash and navigate to the intended path
         const targetPath = location.pathname || '/dashboard';
         subscription.unsubscribe();
         setReady(true);
-        // Replace current URL to remove the hash fragment
         navigate(targetPath, { replace: true });
       }
     });
 
-    // Timeout fallback: if Supabase doesn't fire within 5 seconds, render anyway
+    // Timeout fallback
     const timeout = setTimeout(() => {
       subscription.unsubscribe();
       setReady(true);
@@ -48,10 +64,10 @@ export default function AuthCallback({ children }: { children: React.ReactNode }
 
   if (!ready) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0A0A0F]">
+      <div className="min-h-screen flex items-center justify-center theme-bg-primary">
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <p className="text-[#8B8BA7] text-sm">Signing you in...</p>
+          <p className="theme-text-secondary text-sm">Signing you in...</p>
         </div>
       </div>
     );
