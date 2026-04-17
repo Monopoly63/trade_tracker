@@ -1,6 +1,7 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { authRepo } from '@/lib/repository';
+import { useTheme } from '@/lib/theme';
 import { Button } from '@/components/ui/button';
 import {
   LayoutDashboard, TrendingUp, BarChart3, Target,
@@ -21,6 +22,7 @@ const navItems = [
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
   const [user, setUser] = useState<User | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
@@ -48,8 +50,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   if (!user) return null;
 
+  const isDark = theme === 'dark';
+
   return (
-    <div className="flex h-screen bg-[#0A0A0F] text-white overflow-hidden">
+    <div className={`flex h-screen overflow-hidden ${isDark ? 'bg-[#0A0A0F] text-white' : 'bg-[#F8F9FA] text-[#1A1A2E]'}`}>
       {/* Mobile overlay */}
       {sidebarOpen && (
         <div className="fixed inset-0 bg-black/60 z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
@@ -57,12 +61,13 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col border-r border-[#1E1E2E] bg-[#111118] transition-all duration-300
+        className={`fixed lg:static inset-y-0 left-0 z-50 flex flex-col border-r transition-all duration-300
+          ${isDark ? 'border-[#1E1E2E] bg-[#111118]' : 'border-[#E2E4E9] bg-white'}
           ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
           ${collapsed ? 'w-16' : 'w-64'}
         `}
       >
-        <div className={`flex items-center h-16 border-b border-[#1E1E2E] px-4 ${collapsed ? 'justify-center' : 'justify-between'}`}>
+        <div className={`flex items-center h-16 border-b px-4 ${isDark ? 'border-[#1E1E2E]' : 'border-[#E2E4E9]'} ${collapsed ? 'justify-center' : 'justify-between'}`}>
           {!collapsed && (
             <Link to="/dashboard" className="flex items-center gap-2">
               <TrendingUp className="w-6 h-6 text-indigo-500" />
@@ -73,7 +78,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="hidden lg:flex text-[#8B8BA7] hover:text-white h-8 w-8"
+            className={`hidden lg:flex h-8 w-8 ${isDark ? 'text-[#8B8BA7] hover:text-white' : 'text-[#6B7280] hover:text-[#1A1A2E]'}`}
             onClick={() => setCollapsed(!collapsed)}
           >
             <ChevronLeft className={`w-4 h-4 transition-transform ${collapsed ? 'rotate-180' : ''}`} />
@@ -81,7 +86,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden text-[#8B8BA7] hover:text-white"
+            className={`lg:hidden ${isDark ? 'text-[#8B8BA7] hover:text-white' : 'text-[#6B7280] hover:text-[#1A1A2E]'}`}
             onClick={() => setSidebarOpen(false)}
           >
             <X className="w-5 h-5" />
@@ -99,7 +104,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                 className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors
                   ${isActive
                     ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'
-                    : 'text-[#8B8BA7] hover:text-white hover:bg-white/5'
+                    : isDark
+                      ? 'text-[#8B8BA7] hover:text-white hover:bg-white/5'
+                      : 'text-[#6B7280] hover:text-[#1A1A2E] hover:bg-black/5'
                   }
                   ${collapsed ? 'justify-center' : ''}
                 `}
@@ -112,11 +119,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-[#1E1E2E]">
+        <div className={`p-3 border-t ${isDark ? 'border-[#1E1E2E]' : 'border-[#E2E4E9]'}`}>
           <Button
             variant="ghost"
             onClick={handleSignOut}
-            className={`w-full text-[#8B8BA7] hover:text-red-400 hover:bg-red-500/10 ${collapsed ? 'px-0 justify-center' : 'justify-start'}`}
+            className={`w-full hover:text-red-400 hover:bg-red-500/10 ${isDark ? 'text-[#8B8BA7]' : 'text-[#6B7280]'} ${collapsed ? 'px-0 justify-center' : 'justify-start'}`}
           >
             <LogOut className="w-4 h-4 shrink-0" />
             {!collapsed && <span className="ml-2">Sign Out</span>}
@@ -127,11 +134,11 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       {/* Main content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top bar */}
-        <header className="h-16 border-b border-[#1E1E2E] bg-[#111118] flex items-center px-4 lg:px-6 shrink-0">
+        <header className={`h-16 border-b flex items-center px-4 lg:px-6 shrink-0 ${isDark ? 'border-[#1E1E2E] bg-[#111118]' : 'border-[#E2E4E9] bg-white'}`}>
           <Button
             variant="ghost"
             size="icon"
-            className="lg:hidden text-[#8B8BA7] hover:text-white mr-3"
+            className={`lg:hidden mr-3 ${isDark ? 'text-[#8B8BA7] hover:text-white' : 'text-[#6B7280] hover:text-[#1A1A2E]'}`}
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="w-5 h-5" />

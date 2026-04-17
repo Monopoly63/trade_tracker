@@ -18,7 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { toast } from 'sonner';
 import {
   ArrowLeft, TrendingUp, TrendingDown, AlertTriangle, Tag, Image,
-  Plus, Trash2, Upload, X, ExternalLink,
+  Plus, Trash2, Upload, X, DollarSign,
 } from 'lucide-react';
 
 export default function TradeDetail() {
@@ -32,6 +32,8 @@ export default function TradeDetail() {
   const [loading, setLoading] = useState(true);
   const [showErrorForm, setShowErrorForm] = useState(false);
   const [showTagForm, setShowTagForm] = useState(false);
+  const [showCloseForm, setShowCloseForm] = useState(false);
+  const [closingTrade, setClosingTrade] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -74,6 +76,58 @@ export default function TradeDetail() {
       }
     })();
   }, [id, navigate]);
+
+  const handleCloseTrade = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!trade || !id) return;
+    setClosingTrade(true);
+
+    const fd = new FormData(e.currentTarget);
+    const exitPrice = parseFloat(fd.get('exit_price') as string);
+    const exitTime = (fd.get('exit_time') as string) || new Date().toISOString();
+    const exitReason = (fd.get('exit_reason') as string) || null;
+
+    // Calculate P&L
+    const entryPrice = trade.entry_price;
+    const stopLoss = trade.stop_loss;
+    const positionSize = trade.position_size;
+    const riskPerUnit = Math.abs(entryPrice - stopLoss);
+
+    let pnlUsd: number | null = null;
+    let pnlR: number | null = null;
+    let actualRr: number | null = null;
+
+    if (positionSize && riskPerUnit > 0) {
+      const rawPnl = trade.direction === 'LONG'
+        ? (exitPrice - entryPrice) * positionSize
+        : (entryPrice - exitPrice) * positionSize;
+      pnlUsd = parseFloat(rawPnl.toFixed(2));
+      pnlR = parseFloat((rawPnl / (riskPerUnit * positionSize)).toFixed(2));
+      actualRr = parseFloat((Math.abs(exitPrice - entryPrice) / riskPerUnit).toFixed(2));
+      if ((trade.direction === 'LONG' && exitPrice < entryPrice) || (trade.direction === 'SHORT' && exitPrice > entryPrice)) {
+        actualRr = -actualRr;
+      }
+    }
+
+    try {
+      const updated = await tradesRepo.update(id, {
+        exit_price: exitPrice,
+        exit_time: exitTime,
+        exit_reason: exitReason ?? undefined,
+        status: 'CLOSED',
+        pnl_usd: pnlUsd ?? 0,
+        pnl_r: pnlR ?? 0,
+        actual_rr: actualRr ?? 0,
+      });
+      setTrade(updated);
+      setShowCloseForm(false);
+      toast.success('Trade closed successfully!');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to close trade');
+    } finally {
+      setClosingTrade(false);
+    }
+  };
 
   const handleAddError = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -184,38 +238,51 @@ export default function TradeDetail() {
     <DashboardLayout>
       <div className="space-y-6 max-w-4xl">
         {/* Header */}
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" onClick={() => navigate('/trades')} className="text-[#8B8BA7] hover:text-white">
-            <ArrowLeft className="w-5 h-5" />
-          </Button>
-          <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
-              trade.direction === 'LONG' ? 'bg-[#00C896]/10' : 'bg-[#FF4D6D]/10'
-            }`}>
-              {trade.direction === 'LONG'
-                ? <TrendingUp className="w-5 h-5 text-[#00C896]" />
-                : <TrendingDown className="w-5 h-5 text-[#FF4D6D]" />
-              }
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-white font-mono">{trade.instrument}</h1>
-              <div className="flex items-center gap-2 mt-0.5">
-                <Badge variant="outline" className={trade.direction === 'LONG' ? 'text-[#00C896] border-[#00C896]/30' : 'text-[#FF4D6D] border-[#FF4D6D]/30'}>
-                  {trade.direction}
-                </Badge>
-                <Badge variant="outline" className={
-                  trade.status === 'CLOSED' ? 'text-[#8B8BA7] border-[#8B8BA7]/30' :
-                  trade.status === 'OPEN' ? 'text-[#F0A500] border-[#F0A500]/30' :
-                  'text-[#8B8BA7] border-[#8B8BA7]/30'
-                }>{trade.status}</Badge>
-                {trade.pnl_r !== null && (
-                  <Badge variant="outline" className={`font-mono ${(trade.pnl_r ?? 0) >= 0 ? 'text-[#00C896] border-[#00C896]/30' : 'text-[#FF4D6D] border-[#FF4D6D]/30'}`}>
-                    {formatR(trade.pnl_r)}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate('/trades')} className="text-[#8B8BA7] hover:text-white">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${
+                trade.direction === 'LONG' ? 'bg-[#00C896]/10' : 'bg-[#FF4D6D]/10'
+              }`}>
+                {trade.direction === 'LONG'
+                  ? <TrendingUp className="w-5 h-5 text-[#00C896]" />
+                  : <TrendingDown className="w-5 h-5 text-[#FF4D6D]" />
+                }
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-white font-mono">{trade.instrument}</h1>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <Badge variant="outline" className={trade.direction === 'LONG' ? 'text-[#00C896] border-[#00C896]/30' : 'text-[#FF4D6D] border-[#FF4D6D]/30'}>
+                    {trade.direction}
                   </Badge>
-                )}
+                  <Badge variant="outline" className={
+                    trade.status === 'CLOSED' ? 'text-[#8B8BA7] border-[#8B8BA7]/30' :
+                    trade.status === 'OPEN' ? 'text-[#F0A500] border-[#F0A500]/30' :
+                    'text-[#8B8BA7] border-[#8B8BA7]/30'
+                  }>{trade.status}</Badge>
+                  {trade.pnl_r !== null && (
+                    <Badge variant="outline" className={`font-mono ${(trade.pnl_r ?? 0) >= 0 ? 'text-[#00C896] border-[#00C896]/30' : 'text-[#FF4D6D] border-[#FF4D6D]/30'}`}>
+                      {formatR(trade.pnl_r)}
+                    </Badge>
+                  )}
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Close Trade Button - only for OPEN trades */}
+          {trade.status === 'OPEN' && (
+            <Button
+              size="sm"
+              onClick={() => setShowCloseForm(true)}
+              className="bg-[#F0A500] hover:bg-[#F0A500]/80 text-black font-semibold"
+            >
+              <DollarSign className="w-4 h-4 mr-1" /> Close Trade
+            </Button>
+          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -365,7 +432,7 @@ export default function TradeDetail() {
               <Image className="w-4 h-4" /> Chart Screenshots ({attachments.length})
             </CardTitle>
             <div className="flex items-center gap-2">
-              <Select onValueChange={(type) => fileInputRef.current?.click()}>
+              <Select onValueChange={() => fileInputRef.current?.click()}>
                 <SelectTrigger className="bg-transparent border-indigo-500/30 text-indigo-400 text-xs h-8 w-32">
                   <SelectValue placeholder="Upload..." />
                 </SelectTrigger>
@@ -439,6 +506,65 @@ export default function TradeDetail() {
             </DialogContent>
           </Dialog>
         )}
+
+        {/* Close Trade Dialog */}
+        <Dialog open={showCloseForm} onOpenChange={setShowCloseForm}>
+          <DialogContent className="bg-[#111118] border-[#1E1E2E] text-white">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-[#F0A500]" />
+                Close Trade — {trade.instrument}
+              </DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCloseTrade} className="space-y-4">
+              <div className="p-3 bg-[#0A0A0F] rounded-lg space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#8B8BA7]">Direction</span>
+                  <span className={trade.direction === 'LONG' ? 'text-[#00C896]' : 'text-[#FF4D6D]'}>{trade.direction}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#8B8BA7]">Entry Price</span>
+                  <span className="text-white font-mono">{trade.entry_price}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-[#8B8BA7]">Stop Loss</span>
+                  <span className="text-white font-mono">{trade.stop_loss}</span>
+                </div>
+                {trade.position_size && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-[#8B8BA7]">Position Size</span>
+                    <span className="text-white font-mono">{trade.position_size}</span>
+                  </div>
+                )}
+              </div>
+              <div>
+                <Label className="text-xs text-[#8B8BA7]">Exit Price *</Label>
+                <Input name="exit_price" type="number" step="any" required
+                  placeholder="Enter exit price"
+                  className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs text-[#8B8BA7]">Exit Time</Label>
+                <Input name="exit_time" type="datetime-local"
+                  defaultValue={new Date().toISOString().slice(0, 16)}
+                  className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              </div>
+              <div>
+                <Label className="text-xs text-[#8B8BA7]">Exit Reason</Label>
+                <Textarea name="exit_reason" rows={2} placeholder="Why did you exit?"
+                  className="bg-[#0A0A0F] border-[#1E1E2E] text-white mt-1" />
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button type="button" variant="outline" onClick={() => setShowCloseForm(false)}
+                  className="border-[#1E1E2E] text-[#8B8BA7] bg-transparent">Cancel</Button>
+                <Button type="submit" disabled={closingTrade}
+                  className="bg-[#F0A500] hover:bg-[#F0A500]/80 text-black font-semibold">
+                  {closingTrade ? 'Closing...' : 'Close Trade'}
+                </Button>
+              </div>
+            </form>
+          </DialogContent>
+        </Dialog>
 
         {/* Error Form Dialog */}
         <Dialog open={showErrorForm} onOpenChange={setShowErrorForm}>

@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
-import { authRepo, tradesRepo, strategiesRepo } from '@/lib/repository';
+import { authRepo, tradesRepo, strategiesRepo, tradeTagsRepo } from '@/lib/repository';
 import { formatCurrency, formatR, formatDateTime, exportTradesToCSV, downloadCSV } from '@/lib/services';
 import type { Trade, TradeFormData, TradeFilters, Strategy } from '@/lib/types';
 import { TRADE_DIRECTIONS, TRADE_SESSIONS, TRADE_STATUSES, EMOTIONAL_STATES, TIMEFRAMES } from '@/lib/types';
@@ -28,6 +28,7 @@ export default function Trades() {
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(0);
   const [strategies, setStrategies] = useState<Strategy[]>([]);
+  const [allTags, setAllTags] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<TradeFilters>({});
   const [showFilters, setShowFilters] = useState(false);
@@ -52,6 +53,16 @@ export default function Trades() {
       setUserId(session.user.id);
       const strats = await strategiesRepo.getAll(session.user.id);
       setStrategies(strats);
+
+      // Load all unique tags for filter
+      try {
+        const userTags = await tradeTagsRepo.getAllByUser(session.user.id);
+        const uniqueTags = [...new Set(userTags.map((t) => t.tag))].sort();
+        setAllTags(uniqueTags);
+      } catch {
+        // Tags loading is non-critical
+      }
+
       await loadTrades(session.user.id, filters, page);
       setLoading(false);
     })();
@@ -104,7 +115,7 @@ export default function Trades() {
         {/* Filters */}
         {showFilters && (
           <Card className="bg-[#111118] border-[#1E1E2E]">
-            <CardContent className="p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+            <CardContent className="p-4 grid grid-cols-2 md:grid-cols-5 gap-3">
               <div>
                 <Label className="text-xs text-[#8B8BA7]">Instrument</Label>
                 <div className="relative mt-1">
@@ -141,6 +152,16 @@ export default function Trades() {
                   <SelectContent className="bg-[#111118] border-[#1E1E2E]">
                     <SelectItem value="all">All</SelectItem>
                     {TRADE_SESSIONS.map((s) => <SelectItem key={s} value={s}>{s.replace('_', ' ')}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-[#8B8BA7]">Tag</Label>
+                <Select value={filters.tag || 'all'} onValueChange={(v) => { setFilters({ ...filters, tag: v === 'all' ? undefined : v }); setPage(0); }}>
+                  <SelectTrigger className="bg-[#0A0A0F] border-[#1E1E2E] text-white text-sm h-9 mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent className="bg-[#111118] border-[#1E1E2E]">
+                    <SelectItem value="all">All</SelectItem>
+                    {allTags.map((tag) => <SelectItem key={tag} value={tag}>{tag}</SelectItem>)}
                   </SelectContent>
                 </Select>
               </div>

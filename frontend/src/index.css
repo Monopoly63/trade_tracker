@@ -5,6 +5,7 @@
 @tailwind utilities;
 
 @layer base {
+  /* Dark mode (default) */
   :root {
     --background: 240 20% 3.9%;
     --foreground: 0 0% 98%;
@@ -48,6 +49,69 @@
     --profit: 160 100% 39%;
     --loss: 348 100% 65%;
     --warning: 40 100% 47%;
+
+    /* Custom theme tokens for hardcoded colors */
+    --theme-bg-primary: #0A0A0F;
+    --theme-bg-secondary: #111118;
+    --theme-bg-tertiary: #0A0A0F;
+    --theme-border: #1E1E2E;
+    --theme-border-hover: #2E2E3E;
+    --theme-text-primary: #FFFFFF;
+    --theme-text-secondary: #8B8BA7;
+    --theme-text-muted: #8B8BA7;
+  }
+
+  /* Light mode */
+  .light {
+    --background: 0 0% 98%;
+    --foreground: 240 10% 10%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+
+    --primary: 217 91% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 5% 92%;
+    --secondary-foreground: 240 10% 10%;
+
+    --muted: 240 5% 92%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 240 5% 92%;
+    --accent-foreground: 240 10% 10%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 240 6% 85%;
+    --input: 240 6% 85%;
+    --ring: 217 91% 55%;
+
+    --sidebar-background: 0 0% 97%;
+    --sidebar-foreground: 240 10% 10%;
+    --sidebar-primary: 217 91% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 5% 92%;
+    --sidebar-accent-foreground: 240 10% 10%;
+    --sidebar-border: 240 6% 85%;
+    --sidebar-ring: 217 91% 55%;
+
+    --profit: 160 100% 32%;
+    --loss: 348 100% 55%;
+    --warning: 40 100% 40%;
+
+    --theme-bg-primary: #F8F9FA;
+    --theme-bg-secondary: #FFFFFF;
+    --theme-bg-tertiary: #F1F3F5;
+    --theme-border: #E2E4E9;
+    --theme-border-hover: #CDD0D5;
+    --theme-text-primary: #1A1A2E;
+    --theme-text-secondary: #6B7280;
+    --theme-text-muted: #9CA3AF;
   }
 }
 
@@ -90,5 +154,28 @@
   }
   .bg-loss\/10 {
     background-color: hsl(var(--loss) / 0.1);
+  }
+
+  /* Theme-aware utility classes */
+  .theme-bg-primary {
+    background-color: var(--theme-bg-primary);
+  }
+  .theme-bg-secondary {
+    background-color: var(--theme-bg-secondary);
+  }
+  .theme-bg-tertiary {
+    background-color: var(--theme-bg-tertiary);
+  }
+  .theme-border {
+    border-color: var(--theme-border);
+  }
+  .theme-border-hover:hover {
+    border-color: var(--theme-border-hover);
+  }
+  .theme-text-primary {
+    color: var(--theme-text-primary);
+  }
+  .theme-text-secondary {
+    color: var(--theme-text-secondary);
   }
 }

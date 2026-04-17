@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { authRepo, riskRulesRepo } from '@/lib/repository';
+import { useTheme } from '@/lib/theme';
 import type { RiskRule } from '@/lib/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,10 +10,12 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
-import { Plus, Edit, Trash2, Shield, Settings as SettingsIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Shield, Settings as SettingsIcon, Sun, Moon, Monitor } from 'lucide-react';
 
 export default function Settings() {
+  const { theme, toggleTheme } = useTheme();
   const [userId, setUserId] = useState('');
   const [userEmail, setUserEmail] = useState('');
   const [rules, setRules] = useState<RiskRule[]>([]);
@@ -80,38 +83,76 @@ export default function Settings() {
     <DashboardLayout>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-white">Settings</h1>
-          <p className="text-[#8B8BA7] text-sm mt-1">Manage your account and risk rules</p>
+          <h1 className="text-2xl font-bold theme-text-primary">Settings</h1>
+          <p className="theme-text-secondary text-sm mt-1">Manage your account, appearance, and risk rules</p>
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-[#8B8BA7]">Loading...</div>
+          <div className="text-center py-16 theme-text-secondary">Loading...</div>
         ) : (
           <>
             {/* Account Info */}
-            <Card className="bg-[#111118] border-[#1E1E2E]">
+            <Card className="theme-bg-secondary theme-border border">
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm text-[#8B8BA7] uppercase tracking-wider flex items-center gap-2">
+                <CardTitle className="text-sm theme-text-secondary uppercase tracking-wider flex items-center gap-2">
                   <SettingsIcon className="w-4 h-4" /> Account
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-4 p-3 bg-[#0A0A0F] rounded-lg">
+                <div className="flex items-center gap-4 p-3 theme-bg-tertiary rounded-lg">
                   <div className="w-12 h-12 rounded-full bg-indigo-500/20 flex items-center justify-center">
                     <span className="text-lg font-bold text-indigo-400">{userEmail.charAt(0).toUpperCase()}</span>
                   </div>
                   <div>
-                    <p className="text-white font-medium">{userEmail}</p>
-                    <p className="text-xs text-[#8B8BA7]">User ID: {userId.slice(0, 8)}...</p>
+                    <p className="theme-text-primary font-medium">{userEmail}</p>
+                    <p className="text-xs theme-text-secondary">User ID: {userId.slice(0, 8)}...</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Appearance */}
+            <Card className="theme-bg-secondary theme-border border">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm theme-text-secondary uppercase tracking-wider flex items-center gap-2">
+                  <Monitor className="w-4 h-4" /> Appearance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between p-4 theme-bg-tertiary rounded-lg">
+                  <div className="flex items-center gap-3">
+                    {theme === 'dark' ? (
+                      <Moon className="w-5 h-5 text-indigo-400" />
+                    ) : (
+                      <Sun className="w-5 h-5 text-amber-500" />
+                    )}
+                    <div>
+                      <p className="theme-text-primary font-medium">
+                        {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+                      </p>
+                      <p className="text-xs theme-text-secondary">
+                        {theme === 'dark'
+                          ? 'Using dark theme for comfortable night trading'
+                          : 'Using light theme for daytime visibility'}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Sun className={`w-4 h-4 ${theme === 'light' ? 'text-amber-500' : 'theme-text-secondary'}`} />
+                    <Switch
+                      checked={theme === 'dark'}
+                      onCheckedChange={toggleTheme}
+                    />
+                    <Moon className={`w-4 h-4 ${theme === 'dark' ? 'text-indigo-400' : 'theme-text-secondary'}`} />
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Risk Rules */}
-            <Card className="bg-[#111118] border-[#1E1E2E]">
+            <Card className="theme-bg-secondary theme-border border">
               <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm text-[#8B8BA7] uppercase tracking-wider flex items-center gap-2">
+                <CardTitle className="text-sm theme-text-secondary uppercase tracking-wider flex items-center gap-2">
                   <Shield className="w-4 h-4" /> Risk Rules
                 </CardTitle>
                 <Button size="sm" onClick={() => { setEditingRule(null); setShowRuleForm(true); }}
@@ -121,49 +162,49 @@ export default function Settings() {
               </CardHeader>
               <CardContent>
                 {rules.length === 0 ? (
-                  <p className="text-[#8B8BA7] text-sm text-center py-8">
+                  <p className="theme-text-secondary text-sm text-center py-8">
                     No risk rules defined. Add one to track your risk compliance.
                   </p>
                 ) : (
                   <div className="space-y-3">
                     {rules.map((rule) => (
-                      <div key={rule.id} className="flex items-center justify-between p-4 bg-[#0A0A0F] rounded-lg">
+                      <div key={rule.id} className="flex items-center justify-between p-4 theme-bg-tertiary rounded-lg">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <Badge variant="outline" className={rule.is_active ? 'text-[#00C896] border-[#00C896]/30' : 'text-[#8B8BA7] border-[#8B8BA7]/30'}>
+                            <Badge variant="outline" className={rule.is_active ? 'text-[#00C896] border-[#00C896]/30' : 'theme-text-secondary border-current/30'}>
                               {rule.is_active ? 'Active' : 'Inactive'}
                             </Badge>
                           </div>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                             <div>
-                              <span className="text-[#8B8BA7] text-xs">Max Risk/Trade</span>
-                              <p className="font-mono text-white">{rule.max_risk_per_trade}%</p>
+                              <span className="theme-text-secondary text-xs">Max Risk/Trade</span>
+                              <p className="font-mono theme-text-primary">{rule.max_risk_per_trade}%</p>
                             </div>
                             {rule.max_daily_loss && (
                               <div>
-                                <span className="text-[#8B8BA7] text-xs">Max Daily Loss</span>
-                                <p className="font-mono text-white">{rule.max_daily_loss}%</p>
+                                <span className="theme-text-secondary text-xs">Max Daily Loss</span>
+                                <p className="font-mono theme-text-primary">{rule.max_daily_loss}%</p>
                               </div>
                             )}
                             {rule.max_weekly_loss && (
                               <div>
-                                <span className="text-[#8B8BA7] text-xs">Max Weekly Loss</span>
-                                <p className="font-mono text-white">{rule.max_weekly_loss}%</p>
+                                <span className="theme-text-secondary text-xs">Max Weekly Loss</span>
+                                <p className="font-mono theme-text-primary">{rule.max_weekly_loss}%</p>
                               </div>
                             )}
                             <div>
-                              <span className="text-[#8B8BA7] text-xs">Max Cons. Losses</span>
-                              <p className="font-mono text-white">{rule.max_consecutive_losses}</p>
+                              <span className="theme-text-secondary text-xs">Max Cons. Losses</span>
+                              <p className="font-mono theme-text-primary">{rule.max_consecutive_losses}</p>
                             </div>
                           </div>
-                          {rule.notes && <p className="text-xs text-[#8B8BA7]">{rule.notes}</p>}
+                          {rule.notes && <p className="text-xs theme-text-secondary">{rule.notes}</p>}
                         </div>
                         <div className="flex gap-1 shrink-0 ml-4">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-white"
+                          <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:text-white"
                             onClick={() => { setEditingRule(rule); setShowRuleForm(true); }}>
                             <Edit className="w-4 h-4" />
                           </Button>
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-[#8B8BA7] hover:text-red-400"
+                          <Button variant="ghost" size="icon" className="h-8 w-8 theme-text-secondary hover:text-red-400"
                             onClick={() => handleDeleteRule(rule.id)}>
                             <Trash2 className="w-4 h-4" />
                           </Button>

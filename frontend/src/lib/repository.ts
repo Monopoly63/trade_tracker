@@ -62,12 +62,23 @@ export const authRepo = {
 export const tradesRepo = {
   async getAll(userId: string, filters?: TradeFilters, page = 0, limit = 50): Promise<{ data: Trade[]; count: number }> {
     checkConnection();
+
+    // If tag filter is set, first get trade IDs with that tag
+    let tagTradeIds: string[] | null = null;
+    if (filters?.tag) {
+      tagTradeIds = await tradeTagsRepo.getTradeIdsByTag(userId, filters.tag);
+      if (tagTradeIds.length === 0) {
+        return { data: [], count: 0 };
+      }
+    }
+
     let query = supabase
       .from(TABLES.trades)
       .select(`*, strategy:${TABLES.strategies}(id, name)`, { count: 'exact' })
       .eq('user_id', userId)
       .order('entry_time', { ascending: false });
 
+    if (tagTradeIds) query = query.in('id', tagTradeIds);
     if (filters?.status) query = query.eq('status', filters.status);
     if (filters?.direction) query = query.eq('direction', filters.direction);
     if (filters?.session) query = query.eq('session', filters.session);
@@ -326,6 +337,27 @@ export const tradeTagsRepo = {
       .eq('trade_id', tradeId);
     if (error) throw error;
     return (data as TradeTag[]) || [];
+  },
+
+  async getAllByUser(userId: string): Promise<TradeTag[]> {
+    checkConnection();
+    const { data, error } = await supabase
+      .from(TABLES.trade_tags)
+      .select('*')
+      .eq('user_id', userId);
+    if (error) throw error;
+    return (data as TradeTag[]) || [];
+  },
+
+  async getTradeIdsByTag(userId: string, tag: string): Promise<string[]> {
+    checkConnection();
+    const { data, error } = await supabase
+      .from(TABLES.trade_tags)
+      .select('trade_id')
+      .eq('user_id', userId)
+      .eq('tag', tag);
+    if (error) throw error;
+    return (data || []).map((d: { trade_id: string }) => d.trade_id);
   },
 
   async create(userId: string, tradeId: string, tag: string): Promise<TradeTag> {

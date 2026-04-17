@@ -162,6 +162,7 @@ export interface TradeFilters {
   strategy_id?: string;
   dateFrom?: string;
   dateTo?: string;
+  tag?: string;
 }
 
 // ==================== ANALYTICS TYPES ====================
