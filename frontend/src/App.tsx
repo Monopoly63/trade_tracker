@@ -4,6 +4,7 @@ import { Analytics as VercelAnalytics } from "@vercel/analytics/react";
 import { ThemeProvider } from "@/lib/theme";
 import AuthCallback from "./components/AuthCallback";
 import Index from "./pages/Index";
+import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Trades from "./pages/Trades";
 import TradeDetail from "./pages/TradeDetail";
@@ -21,6 +22,7 @@ function App() {
           <Toaster position="top-right" theme="dark" />
           <Routes>
             <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/trades" element={<Trades />} />
             <Route path="/trades/:id" element={<TradeDetail />} />
